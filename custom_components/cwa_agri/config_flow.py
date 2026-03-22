@@ -96,9 +96,7 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             action = user_input.get("action")
-            if action == "add_preset":
-                return await self.async_step_add_preset_crop()
-            elif action == "add_custom":
+            if action == "add_custom":
                 return await self.async_step_add_custom_crop()
             elif action == "remove":
                 # Find which remove checkbox was checked
@@ -148,46 +146,6 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={
                 "crops_list": crops_list_text,
-                "action_hint": "選擇動作：add_preset=新增預設作物, add_custom=新增自訂作物, done=完成設定",
-            },
-        )
-
-    async def async_step_add_preset_crop(self, user_input=None):
-        """Add a preset crop."""
-        errors = {}
-
-        if user_input is not None:
-            crop_id = user_input.get("crop_id")
-            stage_id = user_input.get("stage_id", "active")
-            if crop_id:
-                crop_info = next((c for c in CROPS if c["id"] == crop_id), None)
-                if crop_info:
-                    if any(c["id"] == crop_id for c in self._crops):
-                        errors["crop_id"] = "already_added"
-                    else:
-                        self._crops.append({
-                            "id": crop_id,
-                            "name": crop_info["name"],
-                            "stage": stage_id,
-                        })
-                        return await self.async_step_crops()
-
-        crop_choices = {c["id"]: c["name"] for c in CROPS}
-        # Use generic stages (same for all crops for simplicity)
-        stage_choices = {s["id"]: s["name"] for s in DEFAULT_STAGES}
-
-        data_schema = vol.Schema({
-            vol.Required("crop_id"): vol.In(crop_choices),
-            vol.Required("stage_id", default="active"): vol.In(stage_choices),
-        })
-
-        return self.async_show_form(
-            step_id="add_preset_crop",
-            data_schema=data_schema,
-            errors=errors,
-            description_placeholders={
-                "crop_choices": "\n".join([f"- {c['id']}: {c['name']}" for c in CROPS]),
-                "stage_choices": "\n".join([f"- {s['id']}: {s['name']}" for s in DEFAULT_STAGES]),
             },
         )
 
@@ -295,9 +253,7 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
 
         if user_input is not None:
             action = user_input.get("action")
-            if action == "add_preset":
-                return await self.async_step_add_preset_crop()
-            elif action == "add_custom":
+            if action == "add_custom":
                 return await self.async_step_add_custom_crop()
             elif action == "remove":
                 # Find which remove checkbox was checked
@@ -348,39 +304,6 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
             description_placeholders={
                 "crops_list": crops_list_text,
             },
-        )
-
-    async def async_step_add_preset_crop(self, user_input=None):
-        """Add preset crop in options flow."""
-        errors = {}
-
-        if user_input is not None:
-            crop_id = user_input.get("crop_id")
-            stage_id = user_input.get("stage_id", "active")
-            if crop_id:
-                crop_info = next((c for c in CROPS if c["id"] == crop_id), None)
-                if crop_info:
-                    if any(c["id"] == crop_id for c in self._crops):
-                        errors["crop_id"] = "already_added"
-                    else:
-                        self._crops.append({
-                            "id": crop_id,
-                            "name": crop_info["name"],
-                            "stage": stage_id,
-                        })
-                        return await self.async_step_user()
-
-        crop_choices = {c["id"]: c["name"] for c in CROPS}
-        stage_choices = {s["id"]: s["name"] for s in DEFAULT_STAGES}
-        data_schema = vol.Schema({
-            vol.Required("crop_id"): vol.In(crop_choices),
-            vol.Required("stage_id", default="active"): vol.In(stage_choices),
-        })
-
-        return self.async_show_form(
-            step_id="add_preset_crop",
-            data_schema=data_schema,
-            errors=errors,
         )
 
     async def async_step_add_custom_crop(self, user_input=None):
