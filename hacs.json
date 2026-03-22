@@ -1,0 +1,15 @@
+{
+  "name": "CWA 農業報告整合",
+  "description": "CWA 農業氣象報告整合 - 提供設定介面並支援 OpenClaw CWA Skill",
+  "version": "1.0.0",
+  "country": ["TW", "CN"],
+  "homeassistant": "2024.1.0",
+  "manifest": {
+    "domain": "cwa_agri",
+    "name": "CWA 農業報告整合",
+    "codeowners": ["@ivanlee1007"]
+  },
+  "content": [
+    "custom_components/cwa_agri"
+  ]
+}

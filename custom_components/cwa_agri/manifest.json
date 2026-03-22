@@ -1,0 +1,17 @@
+{
+  "name": "CWA 農業報告整合",
+  "version": "1.0.0",
+  "documentation": "https://github.com/ivanlee1007/ha-cwa-agri",
+  "issue_tracker": "https://github.com/ivanlee1007/ha-cwa-agri/issues",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@ivanlee1007"],
+  "domain": "cwa_agri",
+  "domain_info": {
+    "name": "CWA 農業報告",
+    "config_flow": true,
+    "description": "CWA 農業氣象報告整合，提供設定介面並暴露設定值供 OpenClaw CWA Skill 讀取"
+  },
+  "integration_type": "hub",
+  "supported_brands": []
+}
