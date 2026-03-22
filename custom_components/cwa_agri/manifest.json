@@ -9,6 +9,7 @@
   "domain": "cwa_agri",
   "config_flow": true,
   "integration_type": "device",
+  "platforms": ["sensor", "select"],
   "iot_class": "cloud_polling",
   "frontend": {
     "entries": ["local/cwa_agri/cwa-agri-dashboard.js"]
