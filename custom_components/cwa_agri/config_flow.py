@@ -43,19 +43,22 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            if not user_input.get(CONF_FARM_NAME):
-                errors[CONF_FARM_NAME] = "required"
-            if not user_input.get(CONF_HA_URL):
-                errors[CONF_HA_URL] = "required"
-            elif not user_input[CONF_HA_URL].startswith(("http://", "https://")):
-                errors[CONF_HA_URL] = "invalid_url"
-            if not user_input.get(CONF_HA_TOKEN):
-                errors[CONF_HA_TOKEN] = "required"
+            try:
+                if not user_input.get(CONF_FARM_NAME):
+                    errors[CONF_FARM_NAME] = "required"
+                if not user_input.get(CONF_HA_URL):
+                    errors[CONF_HA_URL] = "required"
+                elif not user_input[CONF_HA_URL].startswith(("http://", "https://")):
+                    errors[CONF_HA_URL] = "invalid_url"
+                if not user_input.get(CONF_HA_TOKEN):
+                    errors[CONF_HA_TOKEN] = "required"
 
-            if not errors:
-                self._data.update(user_input)
-                # Proceed without HA connection test — will be validated by sync script
-                return await self.async_step_crops()
+                if not errors:
+                    self._data.update(user_input)
+                    return await self.async_step_crops()
+            except Exception as err:
+                _LOGGER.exception(f"CWA Agri config error: {err}")
+                errors["base"] = "unknown"
 
         data_schema = vol.Schema(
             {
