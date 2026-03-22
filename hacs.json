@@ -1,15 +1,18 @@
 {
-  "name": "CWA 農業報告整合",
+  "name": "CWA Agri",
   "description": "CWA 農業氣象報告整合 - 提供設定介面並支援 OpenClaw CWA Skill",
   "version": "1.0.0",
-  "country": ["TW", "CN"],
+  "country": ["TW", "CN", "US"],
   "homeassistant": "2024.1.0",
+  "domain": "cwa_agri",
+  "integrations": [
+    "custom_components/cwa_agri"
+  ],
   "manifest": {
     "domain": "cwa_agri",
     "name": "CWA 農業報告整合",
-    "codeowners": ["@ivanlee1007"]
+    "codeowners": ["@ivanlee1007"],
+    "iot_class": "cloud_polling"
   },
-  "content": [
-    "custom_components/cwa_agri"
-  ]
+  "issue_tracker": "https://github.com/ivanlee1007/ha-cwa-agri/issues"
 }
