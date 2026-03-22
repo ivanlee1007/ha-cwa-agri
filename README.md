@@ -1,16 +1,15 @@
 # CWA Agri - Home Assistant Integration
 
-這個整合的角色很單純：
+這個整合現在是**一包到底**：
 
-- 在 Home Assistant 提供 **CWA 農場設定 UI**
-- 讓使用者用較省力的方式維護 **作物清單 / 生長階段**
+- 提供 **CWA 農場設定 UI**
+- 提供 **半自動 stage assistant**
+- **內建 `custom:cwa-agri-report-card` Dashboard 卡片**
 - 把設定以 Entity 形式暴露給 **OpenClaw CWA Skill** 讀取
-
-> 這個 repo **不包含** Lovelace dashboard 卡片。Dashboard 請搭配另一個 repo：`cwa-agri-dashboard`
 
 ---
 
-## 目前設計（v2 / v2.1）
+## 目前設計（v2 / v2.1 / v2.2）
 
 ### v2：簡化安裝流程
 安裝精靈只做兩件事：
@@ -31,6 +30,22 @@
 - 平常系統先推估
 - 使用者只在要調整時按一下
 - 不要每次都回設定精靈裡維護
+
+### v2.2：Dashboard card 內建進 integration
+這版開始，`ha-cwa-agri` 會自動把內建的 `cwa-agri-dashboard.js` 註冊成前端 module。
+
+也就是說：
+- **不用再另外裝 `cwa-agri-dashboard` repo**
+- **不用再手動新增 Dashboard Resource**
+- 卡片型別直接用：
+
+```yaml
+type: custom:cwa-agri-report-card
+entity: sensor.cwa_agri_report
+title: 農業氣象報告
+```
+
+> 如果你之前有裝過獨立版 `cwa-agri-dashboard`，建議移除舊的 HACS Dashboard repo / Resource，避免重複載入同一張卡。
 
 ---
 
@@ -56,18 +71,40 @@
 - HA URL
 - 長期訪問令牌
 - 經緯度 / 區域
-- 初始作物名稱（每行一個，可先空著）
+- 初始作物名稱（輸入一個按一次 Enter，可先空著）
 
 ### 後續維護
-到整合的 **選項** 頁面，直接用一個多行欄位管理作物名稱：
+到整合的 **選項** 頁面，直接用多值輸入管理作物名稱。
 
-```text
-藍莓
-草莓
-番茄
-```
+例如依序輸入：
+- 藍莓 + Enter
+- 草莓 + Enter
+- 番茄 + Enter
 
 然後每個作物的 stage 可以直接在 HA 裡用 select entity 改，不必再回安裝 flow。
+
+---
+
+## Dashboard 卡片
+
+整合安裝後，直接在 Lovelace 用：
+
+```yaml
+type: custom:cwa-agri-report-card
+entity: sensor.cwa_agri_report
+title: 農業氣象報告
+```
+
+如果你想先確認 integration 內建 card 已成功載入：
+- 先更新 / 重啟 HA
+- 再新增一張 Manual card
+- 貼上上面的 YAML
+
+若出現 `Custom element doesn't exist`：
+1. 確認 `ha-cwa-agri` 已更新到新版
+2. 重啟 Home Assistant
+3. 確認舊的 `cwa-agri-dashboard` Resource 沒有殘留衝突
+4. 瀏覽器硬重新整理
 
 ---
 
@@ -107,5 +144,5 @@ node scripts/sync_ha_config.js
 ## 相關 repo
 
 - HA Integration：`ha-cwa-agri`
-- Dashboard Card：`cwa-agri-dashboard`
 - OpenClaw Skill：`openclaw-cwa-skill`
+- 舊獨立卡片 repo：`cwa-agri-dashboard`（已被這個整合取代）

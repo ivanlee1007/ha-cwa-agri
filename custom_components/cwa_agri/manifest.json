@@ -1,10 +1,10 @@
 {
   "name": "CWA 農業報告整合",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "documentation": "https://github.com/ivanlee1007/ha-cwa-agri",
   "issue_tracker": "https://github.com/ivanlee1007/ha-cwa-agri/issues",
   "requirements": [],
-  "dependencies": [],
+  "dependencies": ["frontend"],
   "codeowners": ["@ivanlee1007"],
   "domain": "cwa_agri",
   "config_flow": true,

@@ -3,6 +3,11 @@
 DOMAIN = "cwa_agri"
 ENTITY_PREFIX = "cwa_agri"
 
+CARD_JS_FILENAME = "cwa-agri-dashboard.js"
+CARD_STATIC_URL = f"/{DOMAIN}_static/{CARD_JS_FILENAME}"
+CARD_RESOURCE_VERSION = "1.2.0"
+CARD_RESOURCE_URL = f"{CARD_STATIC_URL}?v={CARD_RESOURCE_VERSION}"
+
 CONF_FARM_NAME = "farm_name"
 CONF_HA_URL = "ha_url"
 CONF_HA_TOKEN = "ha_token"

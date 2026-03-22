@@ -365,10 +365,14 @@ class CwaAgriReportCard extends HTMLElement {
   }
 }
 
-customElements.define('cwa-agri-report-card', CwaAgriReportCard);
+if (!customElements.get('cwa-agri-report-card')) {
+  customElements.define('cwa-agri-report-card', CwaAgriReportCard);
+}
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: 'cwa-agri-report-card',
-  name: 'CWA Agri Report Card',
-  description: 'OpenClaw CWA agri report dashboard card',
-});
+if (!window.customCards.some((card) => card.type === 'cwa-agri-report-card')) {
+  window.customCards.push({
+    type: 'cwa-agri-report-card',
+    name: 'CWA Agri Report Card',
+    description: 'OpenClaw CWA agri report dashboard card (bundled with ha-cwa-agri)',
+  });
+}
