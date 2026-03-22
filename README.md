@@ -110,22 +110,24 @@ title: 農業氣象報告
 
 ## 與 OpenClaw 搭配
 
-OpenClaw 端用 `sync_ha_config.js` 把整合設定拉回去：
+OpenClaw 端**建議不要拆兩段跑**，直接用 `sync_and_report.js`：
 
 ```bash
 export HA_URL="http://your-home-assistant:8123"
 export HA_TOKEN="your_long_lived_access_token"
-node scripts/sync_ha_config.js
+node scripts/sync_and_report.js --all-sites
 ```
 
-同步流程：
+這樣比較不會掉：
 
 1. HA Integration 暴露設定 Entity
-2. OpenClaw 讀取設定
+2. OpenClaw 先 sync 最新設定
 3. 合併進 `cwa_config.json`
-4. `cwa_agri_report.js` 產生報告
+4. 立刻產生報告
 5. 推送到 `sensor.cwa_agri_report`
 6. Dashboard 顯示
+
+> 若真的要除錯，才單獨跑 `sync_ha_config.js` 或 `cwa_agri_report.js`。
 
 ---
 

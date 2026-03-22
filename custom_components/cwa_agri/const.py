@@ -5,7 +5,7 @@ ENTITY_PREFIX = "cwa_agri"
 
 CARD_JS_FILENAME = "cwa-agri-dashboard.js"
 CARD_STATIC_URL = f"/{DOMAIN}_static/{CARD_JS_FILENAME}"
-CARD_RESOURCE_VERSION = "1.2.0"
+CARD_RESOURCE_VERSION = "1.2.2"
 CARD_RESOURCE_URL = f"{CARD_STATIC_URL}?v={CARD_RESOURCE_VERSION}"
 
 CONF_FARM_NAME = "farm_name"
@@ -18,6 +18,8 @@ CONF_STAGE_MODE = "stage_mode"
 CONF_LAST_ACK_STAGE = "last_ack_stage"
 CONF_LAST_ACK_MONTH = "last_ack_month"
 CONF_PROFILE = "profile"
+
+DEFAULT_REPORT_SENSOR_ENTITY = "sensor.cwa_agri_report"
 
 STAGE_MODE_MANUAL = "manual"
 STAGE_MODE_ASSIST = "assist"

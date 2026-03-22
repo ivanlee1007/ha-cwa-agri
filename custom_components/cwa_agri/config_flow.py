@@ -13,7 +13,7 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import CONF_CROPS, CONF_FARM_NAME, CONF_HA_TOKEN, CONF_HA_URL, CONF_REGION, DOMAIN
-from .helpers import crop_names_to_text, get_merged_crops, parse_crop_names
+from .helpers import crop_names_to_text, get_merged_crops, normalize_ha_url, parse_crop_names
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors[CONF_HA_TOKEN] = "required"
 
                 if not errors:
+                    user_input[CONF_HA_URL] = normalize_ha_url(user_input.get(CONF_HA_URL))
                     self._data.update(user_input)
                     return await self.async_step_location()
             except Exception as err:  # pragma: no cover - defensive
@@ -75,6 +76,7 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 crop_text = user_input.pop(CONF_CROP_NAMES_TEXT, "")
                 self._data.update(user_input)
+                self._data[CONF_HA_URL] = normalize_ha_url(self._data.get(CONF_HA_URL))
                 self._data[CONF_CROPS] = parse_crop_names(crop_text)
 
                 unique_seed = f"{self._data.get(CONF_HA_URL, '')}::{self._data.get(CONF_FARM_NAME, '')}"
@@ -142,6 +144,7 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
 
                 new_data = dict(self._config_entry.data)
                 new_data.update(user_input)
+                new_data[CONF_HA_URL] = normalize_ha_url(new_data.get(CONF_HA_URL))
 
                 self.hass.config_entries.async_update_entry(
                     self._config_entry,

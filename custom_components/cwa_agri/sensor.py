@@ -17,10 +17,11 @@ from .const import (
     CONF_HA_TOKEN,
     CONF_HA_URL,
     CONF_REGION,
+    DEFAULT_REPORT_SENSOR_ENTITY,
     ENTITY_PREFIX,
     DOMAIN,
 )
-from .helpers import assistant_state, get_merged_crops, profile_label, slugify, stage_name_by_id
+from .helpers import assistant_state, get_merged_crops, normalize_ha_url, profile_label, slugify, stage_name_by_id
 
 
 async def async_setup_entry(
@@ -69,10 +70,13 @@ class CwaAgriSettingsSensor(CwaAgriBaseEntity):
             name="CWA 農業設定",
             icon="mdi:cog",
         )
+        farm_slug = slugify(config_entry.data.get(CONF_FARM_NAME, config_entry.entry_id))
+        self.entity_id = f"sensor.cwa_agri_{farm_slug}_settings"
         self._attr_unique_id = f"{ENTITY_PREFIX}_{config_entry.entry_id}_settings"
 
     def _merged_config(self) -> dict:
         data = dict(self._config_entry.data)
+        data[CONF_HA_URL] = normalize_ha_url(data.get(CONF_HA_URL))
         data[CONF_CROPS] = get_merged_crops(self._config_entry)
         return data
 
@@ -88,6 +92,8 @@ class CwaAgriSettingsSensor(CwaAgriBaseEntity):
             CONF_REGION: data.get(CONF_REGION, ""),
             CONF_CROPS: json.dumps(data.get(CONF_CROPS, []), ensure_ascii=False),
             "crop_count": len(data.get(CONF_CROPS, [])),
+            "report_sensor_entity": DEFAULT_REPORT_SENSOR_ENTITY,
+            "sync_ready": True,
         }
 
     @property

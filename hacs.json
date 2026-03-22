@@ -1,7 +1,7 @@
 {
   "name": "CWA Agri",
   "description": "CWA 農業氣象報告整合 - 提供設定介面、內建 Dashboard 卡片並支援 OpenClaw CWA Skill",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "country": ["TW", "CN", "US"],
   "homeassistant": "2024.1.0",
   "domain": "cwa_agri",

@@ -46,6 +46,11 @@ def slugify(value: str) -> str:
     return f"crop_{digest}"
 
 
+def normalize_ha_url(value: str | None) -> str:
+    """Normalize a Home Assistant URL so downstream scripts don't hit //api/... issues."""
+    return str(value or "").strip().rstrip("/")
+
+
 def detect_crop_profile(crop_name: str) -> str:
     """Best-effort crop profile detection from a free-form crop name."""
     lowered = crop_name.strip().lower()
