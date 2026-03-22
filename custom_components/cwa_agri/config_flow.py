@@ -135,8 +135,12 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 lines.append(f"{i+1}. {crop['name']} — {stage_name}  [移除]")
             crops_list_text = "\n".join(lines)
 
-        # Actions
-        crop_options[vol.Required("action", default="")] = str
+        # Actions — use dropdown selection instead of free text
+        crop_options[vol.Required("action", default="")] = vol.In({
+            "": "— 選擇操作 —",
+            "add_custom": "＋ 新增作物",
+            "done": "✓ 完成（儲存設定）",
+        })
 
         data_schema = vol.Schema(crop_options)
 
@@ -293,7 +297,11 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
 
         for i in range(len(self._crops)):
             crop_options[vol.Optional(f"remove_{i}", default=False)] = bool
-        crop_options[vol.Required("action", default="")] = str
+        crop_options[vol.Required("action", default="")] = vol.In({
+            "": "— 選擇操作 —",
+            "add_custom": "＋ 新增作物",
+            "done": "✓ 完成（儲存設定）",
+        })
 
         data_schema = vol.Schema(crop_options)
 
