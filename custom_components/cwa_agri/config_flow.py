@@ -7,6 +7,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import callback
+from homeassistant.helpers import selector
 
 from .const import (
     CONF_CROPS,
@@ -135,12 +136,14 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 lines.append(f"{i+1}. {crop['name']} — {stage_name}  [移除]")
             crops_list_text = "\n".join(lines)
 
-        # Actions — use dropdown selection instead of free text
-        crop_options[vol.Required("action", default="")] = vol.In({
-            "": "— 選擇操作 —",
-            "add_custom": "＋ 新增作物",
-            "done": "✓ 完成（儲存設定）",
-        })
+        # Actions — use selector dropdown (not vol.In radio)
+        crop_options[vol.Required("action")] = selector({"select": {
+            "options": [
+                {"value": "add_custom", "label": "＋ 新增作物"},
+                {"value": "done", "label": "✓ 完成（儲存設定）"},
+            ],
+            "translation_key": "crop_action",
+        }})
 
         data_schema = vol.Schema(crop_options)
 
@@ -297,11 +300,13 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
 
         for i in range(len(self._crops)):
             crop_options[vol.Optional(f"remove_{i}", default=False)] = bool
-        crop_options[vol.Required("action", default="")] = vol.In({
-            "": "— 選擇操作 —",
-            "add_custom": "＋ 新增作物",
-            "done": "✓ 完成（儲存設定）",
-        })
+        crop_options[vol.Required("action")] = selector({"select": {
+            "options": [
+                {"value": "add_custom", "label": "＋ 新增作物"},
+                {"value": "done", "label": "✓ 完成（儲存設定）"},
+            ],
+            "translation_key": "crop_action",
+        }})
 
         data_schema = vol.Schema(crop_options)
 
