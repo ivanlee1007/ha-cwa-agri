@@ -7,11 +7,9 @@
   "dependencies": [],
   "codeowners": ["@ivanlee1007"],
   "domain": "cwa_agri",
-  "domain_info": {
-    "name": "CWA 農業報告",
-    "config_flow": true,
-    "description": "CWA 農業氣象報告整合，提供設定介面並暴露設定值供 OpenClaw CWA Skill 讀取"
-  },
   "integration_type": "hub",
-  "supported_brands": []
+  "iot_class": "cloud_polling",
+  "frontend": {
+    "plugins": ["local/cwa_agri/cwa-agri-dashboard.js"]
+  }
 }
