@@ -1,7 +1,11 @@
 """Config flow for CWA Agri integration."""
 
+import asyncio
+import logging
 import uuid
 from typing import Any
+
+_LOGGER = logging.getLogger(__name__)
 
 import voluptuous as vol
 from homeassistant import config_entries
@@ -48,28 +52,9 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not user_input.get(CONF_HA_TOKEN):
                 errors[CONF_HA_TOKEN] = "required"
 
-            if not errors and not user_input.get("_skip_test"):
-                from homeassistant.helpers.aiohttp_client import async_get_clientsession
-                import aiohttp
-
-                session = async_get_clientsession(self.hass)
-                ha_url = user_input[CONF_HA_URL].rstrip("/")
-
-                try:
-                    async with session.get(
-                        f"{ha_url}/api/",
-                        headers={"Authorization": f"Bearer {user_input[CONF_HA_TOKEN]}"},
-                        timeout=10,
-                    ) as resp:
-                        if resp.status != 200:
-                            errors[CONF_HA_TOKEN] = "auth_failed"
-                except aiohttp.ClientError:
-                    errors[CONF_HA_URL] = "connection_failed"
-                except Exception:
-                    errors[CONF_HA_URL] = "unknown_error"
-
             if not errors:
                 self._data.update(user_input)
+                # Proceed without HA connection test — will be validated by sync script
                 return await self.async_step_crops()
 
         data_schema = vol.Schema(
