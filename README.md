@@ -66,31 +66,51 @@ Home Assistant URL：http://homeassistant:8123
 
 | Entity | 說明 |
 |--------|------|
-| `sensor.cwa_agri_*_settings` | 所有設定的 JSON（主要讀取來源） |
+| `sensor.cwa_agri_<id>_settings` | 所有設定的 JSON（主要讀取來源） |
+| `sensor.cwa_agri_<id>_crop_0` | 第一個作物傳感器 |
+| `sensor.cwa_agri_<id>_crop_1` | 第二個作物傳感器 |
 
-### OpenClaw CWA Skill 讀取方式
+### 自動同步腳本
+
+OpenClaw CWA Skill 已內建 `sync_ha_config.js`，可自動從 HA 同步設定：
+
+```bash
+# 設定環境變數
+export HA_TOKEN="your_long_lived_access_token"
+export HA_URL="http://homeassistant:8123"
+
+# 執行同步
+cd ~/.openclaw/skills/openclaw-cwa-skill
+node scripts/sync_ha_config.js
+```
+
+**特點**：
+- ✅ 自動從 HA 讀取所有設定
+- ✅ 合併到現有 `cwa_config.json`
+- ✅ **保留原有的 CWA API Key**（不從 HA 讀取）
+- ✅ 支援 `--dry-run` 測試模式
+- ✅ 支援 `--verbose` 詳細輸出
+
+### 手動讀取（參考）
 
 ```javascript
-// sync_ha_config.js - 從 HA 同步設定
-const HA_URL = "http://homeassistant:8123";
-const HA_TOKEN = process.env.HA_TOKEN;
-
-// 讀取 HA Entities
+// 直接讀取 HA Entity
 const response = await fetch(`${HA_URL}/api/states`, {
   headers: {
     "Authorization": `Bearer ${HA_TOKEN}`,
-    "Content-Type": "application/json"
   }
 });
 
 const states = await response.json();
-const cwaSettings = states.find(s => s.entity_id.startsWith("sensor.cwa_agri") && s.entity_id.endsWith("_settings"));
+const cwaSettings = states.find(s => 
+  s.entity_id.startsWith("sensor.cwa_agri") && 
+  s.entity_id.endsWith("_settings")
+);
 
 if (cwaSettings) {
   const config = JSON.parse(cwaSettings.state);
   console.log("農場名稱:", config.farm_name);
   console.log("作物:", config.crops);
-  // ... 寫入 cwa_config.json
 }
 ```
 
