@@ -58,7 +58,7 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     return await self.async_step_crops()
             except Exception as err:
                 _LOGGER.exception(f"CWA Agri config error: {err}")
-                errors["base"] = "unknown"
+                errors["base"] = "unknown_error"
 
         data_schema = vol.Schema(
             {
@@ -124,14 +124,15 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 lines.append(f"{i+1}. {crop['name']} — {stage_name}  [移除]")
             crops_list_text = "\n".join(lines)
 
-        # Actions — use selector dropdown (not vol.In radio)
-        crop_options[vol.Required("action")] = selector({"select": {
-            "options": [
-                {"value": "add_custom", "label": "＋ 新增作物"},
-                {"value": "done", "label": "✓ 完成（儲存設定）"},
-            ],
-            "translation_key": "crop_action",
-        }})
+        # Actions — proper HA selector dropdown
+        crop_options[vol.Required("action")] = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    {"value": "add_custom", "label": "＋ 新增作物"},
+                    {"value": "done", "label": "✓ 完成（儲存設定）"},
+                ]
+            )
+        )
 
         data_schema = vol.Schema(crop_options)
 
@@ -288,13 +289,14 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
 
         for i in range(len(self._crops)):
             crop_options[vol.Optional(f"remove_{i}", default=False)] = bool
-        crop_options[vol.Required("action")] = selector({"select": {
-            "options": [
-                {"value": "add_custom", "label": "＋ 新增作物"},
-                {"value": "done", "label": "✓ 完成（儲存設定）"},
-            ],
-            "translation_key": "crop_action",
-        }})
+        crop_options[vol.Required("action")] = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    {"value": "add_custom", "label": "＋ 新增作物"},
+                    {"value": "done", "label": "✓ 完成（儲存設定）"},
+                ]
+            )
+        )
 
         data_schema = vol.Schema(crop_options)
 
