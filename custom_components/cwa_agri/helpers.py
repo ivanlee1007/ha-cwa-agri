@@ -113,18 +113,22 @@ def normalize_crop_record(raw: dict[str, Any], when: datetime | None = None) -> 
     }
 
 
-def parse_crop_names(text: str, existing_crops: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Parse textarea crop names into normalized crop records."""
+def parse_crop_names(value: Any, existing_crops: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Parse crop names from a multiline string or a multi-value text selector."""
     existing_map = {
         str(crop.get("name", "")).strip(): crop
         for crop in (existing_crops or [])
         if str(crop.get("name", "")).strip()
     }
 
-    parts = re.split(r"[\n,]+", text or "")
+    if isinstance(value, list):
+        parts = value
+    else:
+        parts = re.split(r"[\n,]+", value or "")
+
     ordered_names = OrderedDict()
     for part in parts:
-        name = part.strip()
+        name = str(part).strip()
         if name:
             ordered_names[name] = True
 
@@ -138,9 +142,9 @@ def parse_crop_names(text: str, existing_crops: list[dict[str, Any]] | None = No
     return crops
 
 
-def crop_names_to_text(crops: list[dict[str, Any]]) -> str:
-    """Convert crop records back into textarea form."""
-    return "\n".join(crop.get("name", "") for crop in crops if crop.get("name"))
+def crop_names_to_text(crops: list[dict[str, Any]]) -> list[str]:
+    """Convert crop records back into selector list form."""
+    return [crop.get("name", "") for crop in crops if crop.get("name")]
 
 
 def get_merged_crops(config_entry: ConfigEntry) -> list[dict[str, Any]]:

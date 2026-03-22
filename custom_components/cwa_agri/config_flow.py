@@ -105,7 +105,7 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_CROP_NAMES_TEXT,
                     default=defaults[CONF_CROP_NAMES_TEXT],
                 ): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
+                    selector.TextSelectorConfig(multiple=True)
                 ),
             }
         )
@@ -165,7 +165,7 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(CONF_LONGITUDE, default=self._config_entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)): vol.Coerce(float),
                 vol.Optional(CONF_REGION, default=self._config_entry.data.get(CONF_REGION, "")): str,
                 vol.Optional(CONF_CROP_NAMES_TEXT, default=crop_text_default): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
+                    selector.TextSelectorConfig(multiple=True)
                 ),
             }
         )

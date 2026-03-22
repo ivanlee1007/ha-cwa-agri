@@ -13,12 +13,12 @@
       },
       "location": {
         "title": "Location and Initial Crops",
-        "description": "You may enter crop names now, or maintain them later from the options page using a multiline field.",
+        "description": "You may enter crop names now, or maintain them later using a multi-value text field; press Enter after each crop.",
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude",
           "region": "Region (optional)",
-          "crop_names_text": "Crop names (one per line, optional)"
+          "crop_names_text": "Crop names (press Enter after each one, optional)"
         }
       }
     },
@@ -35,7 +35,7 @@
     "step": {
       "init": {
         "title": "CWA Agri Maintenance",
-        "description": "Manage crop names with one multiline field; each crop stage can then be updated anytime using dropdown entities.",
+        "description": "Manage crop names with a multi-value text field; press Enter after each crop, then use dropdown entities for stage updates.",
         "data": {
           "farm_name": "Farm Name",
           "ha_url": "Home Assistant URL",
@@ -43,7 +43,7 @@
           "latitude": "Latitude",
           "longitude": "Longitude",
           "region": "Region (optional)",
-          "crop_names_text": "Crop names (one per line)"
+          "crop_names_text": "Crop names (press Enter after each one)"
         }
       }
     },
