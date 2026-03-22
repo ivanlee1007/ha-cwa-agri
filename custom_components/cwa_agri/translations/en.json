@@ -3,56 +3,29 @@
   "config": {
     "step": {
       "user": {
-        "title": "CWA Agri Settings",
-        "description": "Enter your farm and Home Assistant connection details",
+        "title": "CWA Agri Setup",
+        "description": "Start with the basic connection details. Crop maintenance happens after installation.",
         "data": {
           "farm_name": "Farm Name",
           "ha_url": "Home Assistant URL",
           "ha_token": "Long-Lived Access Token"
-        },
-        "data_description": {
-          "farm_name": "A name to identify this farm configuration",
-          "ha_url": "Home Assistant URL, usually http://homeassistant:8123",
-          "ha_token": "Long-lived access token created in Home Assistant"
-        }
-      },
-      "crops": {
-        "title": "Crop Settings",
-        "description": "Select crop types and their growth stages",
-        "data": {
-          "crop_blueberry": "Blueberry",
-          "stage_blueberry": "Blueberry Growth Stage",
-          "crop_strawberry": "Strawberry",
-          "stage_strawberry": "Strawberry Growth Stage",
-          "crop_rice": "Rice",
-          "stage_rice": "Rice Growth Stage",
-          "crop_vegetable": "Vegetable",
-          "stage_vegetable": "Vegetable Growth Stage",
-          "crop_orchid": "Orchid",
-          "stage_orchid": "Orchid Growth Stage",
-          "crop_tea": "Tea",
-          "stage_tea": "Tea Growth Stage",
-          "crop_other": "Other",
-          "stage_other": "Other Growth Stage"
         }
       },
       "location": {
-        "title": "Farm Location",
-        "description": "Set your farm location for accurate weather data",
+        "title": "Location and Initial Crops",
+        "description": "You may enter crop names now, or maintain them later from the options page using a multiline field.",
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude",
-          "region": "Region (optional)"
+          "region": "Region (optional)",
+          "crop_names_text": "Crop names (one per line, optional)"
         }
       }
     },
     "error": {
       "required": "This field is required",
       "invalid_url": "Please enter a valid URL (starting with http:// or https://)",
-      "auth_failed": "Authentication failed, please verify the token",
-      "connection_failed": "Cannot connect to Home Assistant, please verify the URL and network",
-      "unknown_error": "An unknown error occurred",
-      "select_at_least_one_crop": "Please select at least one crop"
+      "unknown_error": "An unknown error occurred"
     },
     "abort": {
       "already_configured": "This farm configuration already exists"
@@ -61,27 +34,21 @@
   "options": {
     "step": {
       "init": {
-        "title": "CWA Agri Options",
-        "description": "Modify farm and connection settings"
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "cwa_agri_settings": {
-        "name": "CWA Agri Settings",
-        "state": {
-          "attributes": {
-            "farm_name": "Farm Name",
-            "ha_url": "HA URL",
-            "ha_token": "HA Token",
-            "latitude": "Latitude",
-            "longitude": "Longitude",
-            "region": "Region",
-            "crops": "Crop Settings"
-          }
+        "title": "CWA Agri Maintenance",
+        "description": "Manage crop names with one multiline field; each crop stage can then be updated anytime using dropdown entities.",
+        "data": {
+          "farm_name": "Farm Name",
+          "ha_url": "Home Assistant URL",
+          "ha_token": "Long-Lived Access Token",
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "region": "Region (optional)",
+          "crop_names_text": "Crop names (one per line)"
         }
       }
+    },
+    "error": {
+      "unknown_error": "An unknown error occurred"
     }
   }
 }

@@ -1,31 +1,46 @@
 """Constants for CWA Agri integration."""
 
 DOMAIN = "cwa_agri"
+ENTITY_PREFIX = "cwa_agri"
 
-# Crop types
-CROPS = [
-    {"id": "blueberry", "name": "藍莓", "name_en": "Blueberry"},
-    {"id": "strawberry", "name": "草莓", "name_en": "Strawberry"},
-    {"id": "rice", "name": "水稻", "name_en": "Rice"},
-    {"id": "vegetable", "name": "蔬菜", "name_en": "Vegetable"},
-    {"id": "orchid", "name": "蘭花", "name_en": "Orchid"},
-    {"id": "tea", "name": "茶葉", "name_en": "Tea"},
-    {"id": "other", "name": "其他", "name_en": "Other"},
+CONF_FARM_NAME = "farm_name"
+CONF_HA_URL = "ha_url"
+CONF_HA_TOKEN = "ha_token"
+CONF_CROPS = "crops"
+CONF_REGION = "region"
+
+CONF_STAGE_MODE = "stage_mode"
+CONF_LAST_ACK_STAGE = "last_ack_stage"
+CONF_LAST_ACK_MONTH = "last_ack_month"
+CONF_PROFILE = "profile"
+
+STAGE_MODE_MANUAL = "manual"
+STAGE_MODE_ASSIST = "assist"
+DEFAULT_STAGE_MODE = STAGE_MODE_ASSIST
+
+PROFILE_GENERIC = "generic"
+
+# Generic stages used for custom crop names and fallback behavior.
+DEFAULT_STAGES = [
+    {"id": "dormant", "name": "休眠期", "name_en": "Dormant"},
+    {"id": "vegetative", "name": "營養生長期", "name_en": "Vegetative"},
+    {"id": "flowering", "name": "開花期", "name_en": "Flowering"},
+    {"id": "fruiting", "name": "結果期", "name_en": "Fruiting"},
+    {"id": "harvest", "name": "採收期", "name_en": "Harvest"},
 ]
 
-# Growth stages by crop
 GROWTH_STAGES = {
     "blueberry": [
         {"id": "dormant", "name": "休眠期", "name_en": "Dormant"},
         {"id": "budding", "name": "萌芽期", "name_en": "Budding"},
-        {"id": "flowering", "name": "开花期", "name_en": "Flowering"},
+        {"id": "flowering", "name": "開花期", "name_en": "Flowering"},
         {"id": "fruiting", "name": "結果期", "name_en": "Fruiting"},
         {"id": "harvest", "name": "採收期", "name_en": "Harvest"},
     ],
     "strawberry": [
         {"id": "dormant", "name": "休眠期", "name_en": "Dormant"},
         {"id": "vegetative", "name": "營養生長期", "name_en": "Vegetative"},
-        {"id": "flowering", "name": "开花期", "name_en": "Flowering"},
+        {"id": "flowering", "name": "開花期", "name_en": "Flowering"},
         {"id": "fruiting", "name": "結果期", "name_en": "Fruiting"},
         {"id": "harvest", "name": "採收期", "name_en": "Harvest"},
     ],
@@ -38,15 +53,15 @@ GROWTH_STAGES = {
     ],
     "vegetable": [
         {"id": "seedling", "name": "育苗期", "name_en": "Seedling"},
-        {"id": "vegetative", "name": "營養期", "name_en": "Vegetative"},
-        {"id": "flowering", "name": "开花期", "name_en": "Flowering"},
+        {"id": "vegetative", "name": "營養生長期", "name_en": "Vegetative"},
+        {"id": "flowering", "name": "開花期", "name_en": "Flowering"},
         {"id": "fruiting", "name": "結果期", "name_en": "Fruiting"},
         {"id": "harvest", "name": "採收期", "name_en": "Harvest"},
     ],
     "orchid": [
         {"id": "vegetative", "name": "營養生長期", "name_en": "Vegetative"},
         {"id": "spike", "name": "抽花梗期", "name_en": "Spike"},
-        {"id": "flowering", "name": "开花期", "name_en": "Flowering"},
+        {"id": "flowering", "name": "開花期", "name_en": "Flowering"},
         {"id": "post_harvest", "name": "花後養株期", "name_en": "Post-Harvest"},
     ],
     "tea": [
@@ -56,26 +71,62 @@ GROWTH_STAGES = {
         {"id": "second_flush", "name": "二水期", "name_en": "Second Flush"},
         {"id": "maturity", "name": "成熟期", "name_en": "Maturity"},
     ],
-    "other": [
-        {"id": "active", "name": "生長期", "name_en": "Active"},
-        {"id": "mature", "name": "成熟期", "name_en": "Mature"},
-    ],
+    PROFILE_GENERIC: DEFAULT_STAGES,
 }
 
-# Default stages for new crops
-DEFAULT_STAGES = [
-    {"id": "active", "name": "生長期", "name_en": "Active"},
-    {"id": "mature", "name": "成熟期", "name_en": "Mature"},
-]
+PROFILE_LABELS = {
+    "blueberry": "藍莓",
+    "strawberry": "草莓",
+    "rice": "水稻",
+    "vegetable": "蔬菜",
+    "orchid": "蘭花",
+    "tea": "茶葉",
+    PROFILE_GENERIC: "通用作物",
+}
 
-# Config entry keys
-CONF_FARM_NAME = "farm_name"
-CONF_HA_URL = "ha_url"
-CONF_HA_TOKEN = "ha_token"
-CONF_CROPS = "crops"
-CONF_LATITUDE = "latitude"
-CONF_LONGITUDE = "longitude"
-CONF_REGION = "region"
+PROFILE_KEYWORDS = {
+    "blueberry": ["藍莓", "blueberry"],
+    "strawberry": ["草莓", "strawberry"],
+    "rice": ["水稻", "rice", "稻"],
+    "vegetable": ["蔬菜", "番茄", "tomato", "辣椒", "黃瓜", "小黃瓜", "葉菜", "vegetable"],
+    "orchid": ["蘭花", "orchid"],
+    "tea": ["茶", "tea"],
+}
 
-# Entity names
-ENTITY_PREFIX = "cwa_agri"
+ASSIST_MONTH_MAP = {
+    "blueberry": {
+        1: "dormant", 2: "dormant", 3: "budding", 4: "flowering",
+        5: "fruiting", 6: "fruiting", 7: "harvest", 8: "harvest",
+        9: "budding", 10: "budding", 11: "dormant", 12: "dormant",
+    },
+    "strawberry": {
+        1: "fruiting", 2: "fruiting", 3: "harvest", 4: "harvest",
+        5: "vegetative", 6: "vegetative", 7: "vegetative", 8: "vegetative",
+        9: "vegetative", 10: "flowering", 11: "flowering", 12: "fruiting",
+    },
+    "rice": {
+        1: "maturity", 2: "maturity", 3: "seedling", 4: "seedling",
+        5: "tillering", 6: "heading", 7: "grain_fill", 8: "maturity",
+        9: "maturity", 10: "seedling", 11: "tillering", 12: "maturity",
+    },
+    "vegetable": {
+        1: "vegetative", 2: "vegetative", 3: "flowering", 4: "flowering",
+        5: "fruiting", 6: "fruiting", 7: "harvest", 8: "harvest",
+        9: "vegetative", 10: "vegetative", 11: "flowering", 12: "fruiting",
+    },
+    "orchid": {
+        1: "flowering", 2: "flowering", 3: "post_harvest", 4: "vegetative",
+        5: "vegetative", 6: "vegetative", 7: "vegetative", 8: "spike",
+        9: "spike", 10: "flowering", 11: "flowering", 12: "flowering",
+    },
+    "tea": {
+        1: "dormant", 2: "budding", 3: "first_flush", 4: "first_flush",
+        5: "second_flush", 6: "second_flush", 7: "maturity", 8: "maturity",
+        9: "budding", 10: "first_flush", 11: "maturity", 12: "dormant",
+    },
+    PROFILE_GENERIC: {
+        1: "dormant", 2: "dormant", 3: "vegetative", 4: "vegetative",
+        5: "flowering", 6: "flowering", 7: "fruiting", 8: "fruiting",
+        9: "harvest", 10: "harvest", 11: "vegetative", 12: "dormant",
+    },
+}

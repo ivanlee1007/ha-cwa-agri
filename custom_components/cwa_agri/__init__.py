@@ -1,4 +1,6 @@
-"""CWA Agri integration - provides config UI and exposes settings for OpenClaw CWA Skill."""
+"""CWA Agri integration - config UI plus stage assistant entities."""
+
+from __future__ import annotations
 
 import logging
 
@@ -8,37 +10,34 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+PLATFORMS = ["sensor", "select", "button"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up CWA Agri from a config entry."""
     _LOGGER.info("Setting up CWA Agri integration for %s", entry.title)
 
-    if DOMAIN not in hass.data:
-        hass.data[DOMAIN] = {}
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = entry
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    hass.data[DOMAIN][entry.entry_id] = entry.data
-
-    # Forward to sensor + select platforms
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "select"])
-
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.info("Unloading CWA Agri integration")
-
-    result = await hass.config_entries.async_unload_entries(
-        entry, ["sensor", "select"]
-    )
-
-    if entry.entry_id in hass.data.get(DOMAIN, {}):
-        del hass.data[DOMAIN][entry.entry_id]
-
+    result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if result:
+        hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
     return result
 
 
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the entry when options/data change."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Migrate a config entry to a new version."""
+    """Migrate old entries lazily by reload; helper code handles fallback."""
     return True

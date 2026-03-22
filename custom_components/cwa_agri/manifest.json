@@ -1,6 +1,6 @@
 {
   "name": "CWA 農業報告整合",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "documentation": "https://github.com/ivanlee1007/ha-cwa-agri",
   "issue_tracker": "https://github.com/ivanlee1007/ha-cwa-agri/issues",
   "requirements": [],
@@ -9,9 +9,6 @@
   "domain": "cwa_agri",
   "config_flow": true,
   "integration_type": "device",
-  "platforms": ["sensor", "select"],
-  "iot_class": "cloud_polling",
-  "frontend": {
-    "entries": ["local/cwa_agri/cwa-agri-dashboard.js"]
-  }
+  "platforms": ["sensor", "select", "button"],
+  "iot_class": "cloud_polling"
 }

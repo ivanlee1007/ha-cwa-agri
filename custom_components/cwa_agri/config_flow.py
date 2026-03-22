@@ -1,11 +1,10 @@
 """Config flow for CWA Agri integration."""
 
-import asyncio
+from __future__ import annotations
+
 import logging
 import uuid
 from typing import Any
-
-_LOGGER = logging.getLogger(__name__)
 
 import voluptuous as vol
 from homeassistant import config_entries
@@ -13,34 +12,28 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import callback
 from homeassistant.helpers import selector
 
-from .const import (
-    CONF_CROPS,
-    CONF_FARM_NAME,
-    CONF_HA_TOKEN,
-    CONF_HA_URL,
-    CONF_REGION,
-    CROPS,
-    DOMAIN,
-    GROWTH_STAGES,
-    DEFAULT_STAGES,
-)
+from .const import CONF_CROPS, CONF_FARM_NAME, CONF_HA_TOKEN, CONF_HA_URL, CONF_REGION, DOMAIN
+from .helpers import crop_names_to_text, get_merged_crops, parse_crop_names
+
+_LOGGER = logging.getLogger(__name__)
+
+CONF_CROP_NAMES_TEXT = "crop_names_text"
 
 
 @config_entries.HANDLERS.register(DOMAIN)
 class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for CWA Agri."""
 
-    VERSION = 1
-    MINOR_VERSION = 1
+    VERSION = 2
+    MINOR_VERSION = 0
 
     def __init__(self) -> None:
         """Initialize the config flow."""
         self._data: dict[str, Any] = {}
-        self._crops: list[dict[str, str]] = []
 
-    async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
-        errors = {}
+    async def async_step_user(self, user_input: dict[str, Any] | None = None):
+        """Collect only the basic connection information."""
+        errors: dict[str, str] = {}
 
         if user_input is not None:
             try:
@@ -55,9 +48,9 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 if not errors:
                     self._data.update(user_input)
-                    return await self.async_step_crops()
-            except Exception as err:
-                _LOGGER.exception(f"CWA Agri config error: {err}")
+                    return await self.async_step_location()
+            except Exception as err:  # pragma: no cover - defensive
+                _LOGGER.exception("CWA Agri config error: %s", err)
                 errors["base"] = "unknown_error"
 
         data_schema = vol.Schema(
@@ -72,138 +65,35 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=data_schema,
             errors=errors,
-            description_placeholders={
-                "farm_name": "農場名稱（用於識別此設定）",
-                "ha_url": "Home Assistant URL",
-                "ha_token": "Home Assistant 長期訪問令牌",
-            },
         )
 
-    async def async_step_crops(self, user_input=None):
-        """Show crops list with options to add more or finish."""
-        errors = {}
+    async def async_step_location(self, user_input: dict[str, Any] | None = None):
+        """Collect location + initial crop list in one clean step."""
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            action = user_input.get("action")
-            if action == "add_custom":
-                return await self.async_step_add_custom_crop()
-            elif action == "remove":
-                # Find which remove checkbox was checked
-                for key, val in user_input.items():
-                    if key.startswith("remove_") and val:
-                        idx = int(key.split("_")[1])
-                        if 0 <= idx < len(self._crops):
-                            self._crops.pop(idx)
-                        break
-                return await self.async_step_crops()
-            elif action == "done":
-                if not self._crops:
-                    errors["base"] = "need_at_least_one_crop"
-                else:
-                    self._data[CONF_CROPS] = self._crops
-                    return await self.async_step_location()
+            try:
+                crop_text = user_input.pop(CONF_CROP_NAMES_TEXT, "")
+                self._data.update(user_input)
+                self._data[CONF_CROPS] = parse_crop_names(crop_text)
 
-        return await self._show_crops_form(errors=errors)
-
-    async def _show_crops_form(self, errors=None):
-        """Show current crops list with add/remove/done actions."""
-        errors = errors or {}
-
-        # Build current crops display and removal options
-        crop_options = {}
-        for i, crop in enumerate(self._crops):
-            stage_name = self._get_stage_display_name(crop["id"], crop["stage"])
-            crop_options[vol.Optional(f"remove_{i}", default=False)] = bool
-
-        if not self._crops:
-            crops_list_text = "（尚未新增任何作物）"
-        else:
-            lines = []
-            for i, crop in enumerate(self._crops):
-                stage_name = self._get_stage_display_name(crop["id"], crop["stage"])
-                lines.append(f"{i+1}. {crop['name']} — {stage_name}  [移除]")
-            crops_list_text = "\n".join(lines)
-
-        # Actions — proper HA selector dropdown
-        crop_options[vol.Required("action")] = selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=[
-                    {"value": "add_custom", "label": "＋ 新增作物"},
-                    {"value": "done", "label": "✓ 完成（儲存設定）"},
-                ]
-            )
-        )
-
-        data_schema = vol.Schema(crop_options)
-
-        return self.async_show_form(
-            step_id="crops",
-            data_schema=data_schema,
-            errors=errors,
-            description_placeholders={
-                "crops_list": crops_list_text,
-            },
-        )
-
-    async def async_step_add_custom_crop(self, user_input=None):
-        """Add a custom crop with free-form name."""
-        errors = {}
-
-        if user_input is not None:
-            name = user_input.get("crop_name", "").strip()
-            stage_id = user_input.get("stage_id", "active")
-            if not name:
-                errors["crop_name"] = "required"
-            else:
-                custom_id = f"custom_{uuid.uuid4().hex[:6]}"
-                self._crops.append({
-                    "id": custom_id,
-                    "name": name,
-                    "stage": stage_id,
-                })
-                return await self.async_step_crops()
-
-        stage_options = {s["id"]: s["name"] for s in DEFAULT_STAGES}
-
-        data_schema = vol.Schema({
-            vol.Required("crop_name"): str,
-            vol.Required("stage_id", default="active"): vol.In(stage_options),
-        })
-
-        return self.async_show_form(
-            step_id="add_custom_crop",
-            data_schema=data_schema,
-            errors=errors,
-            description_placeholders={
-                "stage_options": "\n".join([f"- {s['id']}: {s['name']}" for s in DEFAULT_STAGES]),
-            },
-        )
-
-    def _get_stage_display_name(self, crop_id, stage_id):
-        """Get stage display name for a crop."""
-        stages = GROWTH_STAGES.get(crop_id, DEFAULT_STAGES)
-        for s in stages:
-            if s["id"] == stage_id:
-                return s["name"]
-        return stage_id
-
-    async def async_step_location(self, user_input=None):
-        """Handle optional location settings."""
-        errors = {}
-
-        if user_input is not None:
-            self._data.update(user_input)
-            await self.async_set_unique_id(f"cwa_agri_{uuid.uuid4().hex[:8]}")
-            self._abort_if_unique_id_configured()
-            return self.async_create_entry(
-                title=self._data.get(CONF_FARM_NAME, "CWA 農業報告"),
-                data=self._data,
-            )
+                unique_seed = f"{self._data.get(CONF_HA_URL, '')}::{self._data.get(CONF_FARM_NAME, '')}"
+                unique_id = f"cwa_agri_{uuid.uuid5(uuid.NAMESPACE_URL, unique_seed).hex[:12]}"
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
+                return self.async_create_entry(
+                    title=self._data.get(CONF_FARM_NAME, "CWA 農業報告"),
+                    data=self._data,
+                )
+            except Exception as err:  # pragma: no cover - defensive
+                _LOGGER.exception("CWA Agri location step error: %s", err)
+                errors["base"] = "unknown_error"
 
         defaults = {
             CONF_LATITUDE: self.hass.config.latitude,
             CONF_LONGITUDE: self.hass.config.longitude,
-            CONF_REGION: "",
+            CONF_REGION: self._data.get(CONF_REGION, ""),
+            CONF_CROP_NAMES_TEXT: "",
         }
 
         data_schema = vol.Schema(
@@ -211,6 +101,12 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_LATITUDE, default=defaults[CONF_LATITUDE]): vol.Coerce(float),
                 vol.Optional(CONF_LONGITUDE, default=defaults[CONF_LONGITUDE]): vol.Coerce(float),
                 vol.Optional(CONF_REGION, default=defaults[CONF_REGION]): str,
+                vol.Optional(
+                    CONF_CROP_NAMES_TEXT,
+                    default=defaults[CONF_CROP_NAMES_TEXT],
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
             }
         )
 
@@ -218,9 +114,6 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="location",
             data_schema=data_schema,
             errors=errors,
-            description_placeholders={
-                "help": "選擇農場位置（用於獲取當地天氣資訊）",
-            },
         )
 
     @staticmethod
@@ -236,113 +129,49 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self._config_entry = config_entry
-        self._data = dict(config_entry.data)
-        self._crops = list(self._data.get(CONF_CROPS, []))
 
-    async def async_step_init(self, user_input=None):
-        """Manage the options."""
-        return await self.async_step_user()
-
-    async def async_step_user(self, user_input=None):
-        """Handle options - same as main flow."""
-        errors = {}
+    async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        """Expose one single, much simpler maintenance page."""
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            action = user_input.get("action")
-            if action == "add_custom":
-                return await self.async_step_add_custom_crop()
-            elif action == "remove":
-                # Find which remove checkbox was checked
-                for key, val in user_input.items():
-                    if key.startswith("remove_") and val:
-                        idx = int(key.split("_")[1])
-                        if 0 <= idx < len(self._crops):
-                            self._crops.pop(idx)
-                        break
-                return await self.async_step_user()
-            elif action == "done":
-                if not self._crops:
-                    errors["base"] = "need_at_least_one_crop"
-                else:
-                    self._data[CONF_CROPS] = self._crops
-                    self.hass.config_entries.async_update_entry(
-                        self._config_entry,
-                        data=self._data,
-                    )
-                    return self.async_create_entry(title="", data={})
+            try:
+                crop_text = user_input.pop(CONF_CROP_NAMES_TEXT, "")
+                current_crops = get_merged_crops(self._config_entry)
+                new_crops = parse_crop_names(crop_text, existing_crops=current_crops)
 
-        return await self._show_options_crops_form(errors=errors)
+                new_data = dict(self._config_entry.data)
+                new_data.update(user_input)
 
-    async def _show_options_crops_form(self, errors=None):
-        """Show current crops list for options flow."""
-        errors = errors or {}
+                self.hass.config_entries.async_update_entry(
+                    self._config_entry,
+                    data=new_data,
+                    options={CONF_CROPS: new_crops},
+                )
+                return self.async_create_entry(title="", data={})
+            except Exception as err:  # pragma: no cover - defensive
+                _LOGGER.exception("CWA Agri options error: %s", err)
+                errors["base"] = "unknown_error"
 
-        crop_options = {}
-        if self._crops:
-            lines = []
-            for i, crop in enumerate(self._crops):
-                stage_name = self._get_stage_display_name(crop["id"], crop["stage"])
-                lines.append(f"{i+1}. {crop['name']} — {stage_name}")
-            crops_list_text = "\n".join(lines)
-        else:
-            crops_list_text = "（尚未新增任何作物）"
+        current_crops = get_merged_crops(self._config_entry)
+        crop_text_default = crop_names_to_text(current_crops)
 
-        for i in range(len(self._crops)):
-            crop_options[vol.Optional(f"remove_{i}", default=False)] = bool
-        crop_options[vol.Required("action")] = selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=[
-                    {"value": "add_custom", "label": "＋ 新增作物"},
-                    {"value": "done", "label": "✓ 完成（儲存設定）"},
-                ]
-            )
+        data_schema = vol.Schema(
+            {
+                vol.Required(CONF_FARM_NAME, default=self._config_entry.data.get(CONF_FARM_NAME, "")): str,
+                vol.Required(CONF_HA_URL, default=self._config_entry.data.get(CONF_HA_URL, "http://homeassistant:8123")): str,
+                vol.Required(CONF_HA_TOKEN, default=self._config_entry.data.get(CONF_HA_TOKEN, "")): str,
+                vol.Optional(CONF_LATITUDE, default=self._config_entry.data.get(CONF_LATITUDE, self.hass.config.latitude)): vol.Coerce(float),
+                vol.Optional(CONF_LONGITUDE, default=self._config_entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)): vol.Coerce(float),
+                vol.Optional(CONF_REGION, default=self._config_entry.data.get(CONF_REGION, "")): str,
+                vol.Optional(CONF_CROP_NAMES_TEXT, default=crop_text_default): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+            }
         )
 
-        data_schema = vol.Schema(crop_options)
-
         return self.async_show_form(
-            step_id="user",
-            data_schema=data_schema,
-            errors=errors,
-            description_placeholders={
-                "crops_list": crops_list_text,
-            },
-        )
-
-    async def async_step_add_custom_crop(self, user_input=None):
-        """Add custom crop in options flow."""
-        errors = {}
-
-        if user_input is not None:
-            name = user_input.get("crop_name", "").strip()
-            stage_id = user_input.get("stage_id", "active")
-            if not name:
-                errors["crop_name"] = "required"
-            else:
-                custom_id = f"custom_{uuid.uuid4().hex[:6]}"
-                self._crops.append({
-                    "id": custom_id,
-                    "name": name,
-                    "stage": stage_id,
-                })
-                return await self.async_step_user()
-
-        stage_options = {s["id"]: s["name"] for s in DEFAULT_STAGES}
-        data_schema = vol.Schema({
-            vol.Required("crop_name"): str,
-            vol.Required("stage_id", default="active"): vol.In(stage_options),
-        })
-
-        return self.async_show_form(
-            step_id="add_custom_crop",
+            step_id="init",
             data_schema=data_schema,
             errors=errors,
         )
-
-    def _get_stage_display_name(self, crop_id, stage_id):
-        """Get stage display name for a crop."""
-        stages = GROWTH_STAGES.get(crop_id, DEFAULT_STAGES)
-        for s in stages:
-            if s["id"] == stage_id:
-                return s["name"]
-        return stage_id

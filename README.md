@@ -1,179 +1,111 @@
 # CWA Agri - Home Assistant Integration
 
-🌾 **CWA 農業報告整合** - 為 Home Assistant 提供 CWA 農業氣象設定介面，並一站式包含 Lovelace 顯示卡片。
+這個整合的角色很單純：
+
+- 在 Home Assistant 提供 **CWA 農場設定 UI**
+- 讓使用者用較省力的方式維護 **作物清單 / 生長階段**
+- 把設定以 Entity 形式暴露給 **OpenClaw CWA Skill** 讀取
+
+> 這個 repo **不包含** Lovelace dashboard 卡片。Dashboard 請搭配另一個 repo：`cwa-agri-dashboard`
 
 ---
 
-## 功能特色
+## 目前設計（v2 / v2.1）
 
-- ✅ **友善的設定精靈 UI** - 在 Home Assistant 設定頁面直接輸入農場資訊
-- ✅ **支援多種作物** - 藍莓、草莓、水稻、蔬菜、蘭花、茶葉等
-- ✅ **生長階段設定** - 根據作物類型選擇對應的生長階段
-- ✅ **位置資訊** - 自動抓取 HA 的位置，也可手動設定
-- ✅ **內建 Dashboard 卡片** - 無需另外安裝，UI 直接可選 `CWA Agri Report Card`
-- ✅ **設定同步** - OpenClaw CWA Skill 可直接讀取 HA Entities 取得設定
+### v2：簡化安裝流程
+安裝精靈只做兩件事：
+1. 基本連線資料
+2. 位置 + 初始作物清單（可留空）
+
+作物不再用「新增一筆 / 刪除一筆 / 下一步」那種卡住人的 flow。
+
+### v2.1：半自動 stage assistant
+每個作物會自動產生：
+- `select.cwa_agri_<crop>_stage`：目前階段
+- `select.cwa_agri_<crop>_stage_mode`：`手動 / 半自動`
+- `sensor.cwa_agri_<crop>_stage_assistant`：系統建議、信心、原因
+- `button.cwa_agri_<crop>_apply_stage_suggestion`：套用建議
+- `button.cwa_agri_<crop>_keep_current_stage`：維持目前階段
+
+理念是：
+- 平常系統先推估
+- 使用者只在要調整時按一下
+- 不要每次都回設定精靈裡維護
 
 ---
 
 ## 安裝方式
 
-### 方法 1：透過 HACS 安裝（推薦）
-
-1. 在 Home Assistant 開啟 **HACS**
-2. 進入 **設定** → **Custom repositories**
-3. 填入：
-   ```
-   Repository: https://github.com/ivanlee1007/ha-cwa-agri
-   Category: Integration
-   ```
-4. 按 **新增**
-5. 回到 HACS 首頁，搜尋 **CWA Agri**
-6. 點進去 → **下載 / Download**
-
-### 方法 2：手動安裝
-
-1. 下載此 repo
-2. 將 `custom_components/cwa_agri` 資料夾複製到 Home Assistant 的 `config/custom_components/` 目錄
-3. 重啟 Home Assistant
+### HACS Custom Repository
+1. Home Assistant → **HACS**
+2. **Custom repositories**
+3. 加入：
+   - Repository: `https://github.com/ivanlee1007/ha-cwa-agri`
+   - Category: `Integration`
+4. 安裝 **CWA Agri**
+5. 重啟 Home Assistant
+6. 到 **設定 → 裝置與服務** 新增整合
 
 ---
 
-## 設定方式
+## 使用方式
 
-### Step 1: 基本資訊
+### 第一次安裝
+填：
+- 農場名稱
+- HA URL
+- 長期訪問令牌
+- 經緯度 / 區域
+- 初始作物名稱（每行一個，可先空著）
 
+### 後續維護
+到整合的 **選項** 頁面，直接用一個多行欄位管理作物名稱：
+
+```text
+藍莓
+草莓
+番茄
 ```
-農場名稱：呼密·藍莓農場
-Home Assistant URL：http://homeassistant:8123
-長期訪問令牌：eyJhbGc...
-```
 
-> 💡 **如何建立長期訪問令牌？**
-> Home Assistant → 右上角大頭貼 → 個人 → 長期訪問令牌 → 建立
-
-### Step 2: 作物設定
-
-選擇種植的作物及其生長階段：
-
-| 作物 | 生長階段選項 |
-|------|-------------|
-| 藍莓 | 休眠期、萌芽期、开花期、結果期、採收期 |
-| 草莓 | 休眠期、營養生長期、开花期、結果期、採收期 |
-| 水稻 | 育苗期、分糵期、抽穗期、乳熟期、成熟期 |
-| 蔬菜 | 育苗期、營養期、开花期、结果期、採收期 |
-| 蘭花 | 營養生長期、抽花梗期、开花期、花後養株期 |
-| 茶葉 | 休眠期、萌芽期、頭水期、二水期、成熟期 |
-
-### Step 3: 位置設定（選填）
-
-系統會自動帶入 Home Assistant 的位置，也可自行修改。
+然後每個作物的 stage 可以直接在 HA 裡用 select entity 改，不必再回安裝 flow。
 
 ---
 
-## 新增 Dashboard 卡片
+## 與 OpenClaw 搭配
 
-安裝完成並設定後，在 HA Dashboard 新增卡片：
-
-1. 進入 Dashboard → 編輯 → 新增卡片
-2. 搜尋 **CWA Agri Report Card** 或找到 **CWA Agri**
-3. 選擇並新增
-
-卡片會自動讀取 `sensor.cwa_agri_report`（由 OpenClaw CWA Skill 產生）
-
----
-
-## 與 OpenClaw CWA Skill 搭配使用
-
-### 安裝 OpenClaw CWA Skill
+OpenClaw 端用 `sync_ha_config.js` 把整合設定拉回去：
 
 ```bash
-# 在 OpenClaw 主機
-cp -r skills/openclaw-cwa-skill ~/.openclaw/skills/
-```
-
-### 同步 HA 設定到 OpenClaw
-
-此整合會在 HA 中建立設定 Entities，OpenClaw 可自動同步：
-
-```bash
-cd ~/.openclaw/skills/openclaw-cwa-skill
-
-# 設定環境變數
+export HA_URL="http://your-home-assistant:8123"
 export HA_TOKEN="your_long_lived_access_token"
-export HA_URL="http://homeassistant:8123"
-
-# 同步設定
 node scripts/sync_ha_config.js
 ```
 
-**特點**：
-- ✅ 自動從 HA 讀取所有設定
-- ✅ 合併到現有 `cwa_config.json`
-- ✅ **保留原有的 CWA API Key**（不從 HA 讀取）
-- ✅ 支援 `--dry-run` 測試模式
+同步流程：
 
-### OpenClaw 產出報告到 HA
-
-```
-設定同步 → OpenClaw CWA Skill 產生報告 → 推送 sensor.cwa_agri_report → Dashboard 顯示
-```
-
-OpenClaw 需要處理的 Entity：
-
-| Entity | 用途 |
-|--------|------|
-| `sensor.cwa_agri_report` | OpenClaw 產生的農業報告（需手動建立或由整合建立） |
-
-> 📝 **注意**：`sensor.cwa_agri_report` 由 OpenClaw CWA Skill 產生並推送，HA Integration 本身不建立此 Entity。
+1. HA Integration 暴露設定 Entity
+2. OpenClaw 讀取設定
+3. 合併進 `cwa_config.json`
+4. `cwa_agri_report.js` 產生報告
+5. 推送到 `sensor.cwa_agri_report`
+6. Dashboard 顯示
 
 ---
 
-## 資料格式
+## 注意
 
-HA Integration 產生的設定 Entity：
-
-```json
-{
-  "farm_name": "呼密·藍莓農場",
-  "ha_url": "http://homeassistant:8123",
-  "ha_token": "eyJhbGc...",
-  "latitude": 23.123,
-  "longitude": 120.456,
-  "region": "台灣",
-  "crops": [
-    { "id": "blueberry", "name": "藍莓", "stage": "dormant" },
-    { "id": "strawberry", "name": "草莓", "stage": "fruiting" }
-  ]
-}
-```
+- `cwa_api_key` 仍保留在 OpenClaw 端，不放在這個整合裡
+- 這個整合目前的 stage assistant 是 **季節節奏推估**，不是作物學等級的精準生理模型
+- 如果要更準，下一步應該是加：
+  - GDD
+  - 區域季節模板
+  - 作物模板
+  - 事件觸發提醒
 
 ---
 
-## 檔案結構
+## 相關 repo
 
-```
-custom_components/cwa_agri/
-├── __init__.py          # 整合初始化
-├── config_flow.py       # 設定精靈
-├── const.py             # 常數定義
-├── sensor.py            # Sensor 實體
-├── manifest.json        # 整合發布資訊（含前端插件設定）
-├── translations/
-│   ├── zh-Hant.json     # 繁體中文
-│   └── en.json          # 英文
-└── www/
-    └── cwa-agri-dashboard.js  # Lovelace 卡片 ⭐內建
-```
-
----
-
-## 需求
-
-- Home Assistant 2024.1.0+
-- OpenClaw CWA Skill（用於產生農業報告並推送到 HA）
-
----
-
-## License
-
-MIT License
+- HA Integration：`ha-cwa-agri`
+- Dashboard Card：`cwa-agri-dashboard`
+- OpenClaw Skill：`openclaw-cwa-skill`

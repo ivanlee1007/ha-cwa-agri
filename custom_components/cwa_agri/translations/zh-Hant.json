@@ -4,55 +4,28 @@
     "step": {
       "user": {
         "title": "CWA 農業設定",
-        "description": "請輸入農場和 Home Assistant 的連線資訊",
+        "description": "先填基本資料，作物管理改成安裝後再維護。",
         "data": {
           "farm_name": "農場名稱",
           "ha_url": "Home Assistant URL",
           "ha_token": "長期訪問令牌"
-        },
-        "data_description": {
-          "farm_name": "用於識別此農場設定的名稱",
-          "ha_url": "Home Assistant 的網址，通常是 http://homeassistant:8123",
-          "ha_token": "在 Home Assistant 中建立的長期訪問令牌"
-        }
-      },
-      "crops": {
-        "title": "作物設定",
-        "description": "選擇種植的作物種類及其生長階段",
-        "data": {
-          "crop_blueberry": "藍莓",
-          "stage_blueberry": "藍莓生長階段",
-          "crop_strawberry": "草莓",
-          "stage_strawberry": "草莓生長階段",
-          "crop_rice": "水稻",
-          "stage_rice": "水稻生長階段",
-          "crop_vegetable": "蔬菜",
-          "stage_vegetable": "蔬菜生長階段",
-          "crop_orchid": "蘭花",
-          "stage_orchid": "蘭花生長階段",
-          "crop_tea": "茶葉",
-          "stage_tea": "茶葉生長階段",
-          "crop_other": "其他",
-          "stage_other": "其他生長階段"
         }
       },
       "location": {
-        "title": "農場位置",
-        "description": "設定農場位置以獲取準確的天氣資訊",
+        "title": "位置與初始作物",
+        "description": "作物名稱可先填，也可以之後在選項頁面用多行文字維護。",
         "data": {
           "latitude": "緯度",
           "longitude": "經度",
-          "region": "地區（選填）"
+          "region": "地區（選填）",
+          "crop_names_text": "作物名稱（每行一個，可留空）"
         }
       }
     },
     "error": {
       "required": "此欄位為必填",
       "invalid_url": "請輸入有效的 URL（以 http:// 或 https:// 開頭）",
-      "auth_failed": "認證失敗，請確認令牌正確",
-      "connection_failed": "無法連線到 Home Assistant，請確認 URL 和網路",
-      "unknown_error": "發生未知錯誤",
-      "select_at_least_one_crop": "請至少選擇一種作物"
+      "unknown_error": "發生未知錯誤"
     },
     "abort": {
       "already_configured": "此農場設定已存在"
@@ -61,27 +34,21 @@
   "options": {
     "step": {
       "init": {
-        "title": "CWA 農業設定選項",
-        "description": "修改農場和連線設定"
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "cwa_agri_settings": {
-        "name": "CWA 農業設定",
-        "state": {
-          "attributes": {
-            "farm_name": "農場名稱",
-            "ha_url": "HA URL",
-            "ha_token": "HA 令牌",
-            "latitude": "緯度",
-            "longitude": "經度",
-            "region": "地區",
-            "crops": "作物設定"
-          }
+        "title": "CWA 農業維護",
+        "description": "用一個多行欄位管理作物名稱；每個作物的階段再用下拉選單隨時調整。",
+        "data": {
+          "farm_name": "農場名稱",
+          "ha_url": "Home Assistant URL",
+          "ha_token": "長期訪問令牌",
+          "latitude": "緯度",
+          "longitude": "經度",
+          "region": "地區（選填）",
+          "crop_names_text": "作物名稱（每行一個）"
         }
       }
+    },
+    "error": {
+      "unknown_error": "發生未知錯誤"
     }
   }
 }
