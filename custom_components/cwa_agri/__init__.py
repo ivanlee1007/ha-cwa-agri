@@ -143,8 +143,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data[entry.entry_id] = entry
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    # Write credentials to private file for OpenClaw sync script
-    _write_credentials(hass, entry)
+    # Write credentials to private file for OpenClaw sync script (run in executor to avoid blocking event loop)
+    await hass.async_add_executor_job(_write_credentials, hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
