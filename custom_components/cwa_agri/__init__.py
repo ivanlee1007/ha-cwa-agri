@@ -2,21 +2,55 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
 from homeassistant.components import frontend
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CARD_RESOURCE_URL, CARD_STATIC_URL, DOMAIN
+from .const import (
+    CARD_RESOURCE_URL,
+    CARD_STATIC_URL,
+    CONF_CROPS,
+    CONF_FARM_NAME,
+    CONF_HA_TOKEN,
+    CONF_HA_URL,
+    CONF_REGION,
+    DEFAULT_REPORT_SENSOR_ENTITY,
+    DOMAIN,
+)
+from .helpers import get_merged_crops, normalize_ha_url, slugify
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["sensor", "select", "button"]
 
 DEMO_SENSOR_ENTITY = "sensor.cwa_agri_report"
+_CREDENTIALS_FILE = "cwa_credentials.json"
+
+
+def _write_credentials(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Write ha_url + ha_token to a private file for OpenClaw sync script."""
+    creds = {
+        "ha_url": normalize_ha_url(entry.data.get(CONF_HA_URL, "")),
+        "ha_token": entry.data.get(CONF_HA_TOKEN, ""),
+        "farm_name": entry.data.get(CONF_FARM_NAME, ""),
+        "region": entry.data.get(CONF_REGION, ""),
+        "latitude": entry.data.get(CONF_LATITUDE),
+        "longitude": entry.data.get(CONF_LONGITUDE),
+        "crops": get_merged_crops(entry),
+        "report_sensor_entity": DEFAULT_REPORT_SENSOR_ENTITY,
+    }
+    path = Path(hass.config.config_dir) / _CREDENTIALS_FILE
+    try:
+        path.write_text(json.dumps(creds, ensure_ascii=False, indent=2), encoding="utf-8")
+        _LOGGER.info("Wrote credentials to %s (NOT exposed in sensor states)", path)
+    except OSError as err:
+        _LOGGER.warning("Failed to write credentials file: %s", err)
 
 
 def _ensure_demo_sensor(hass: HomeAssistant) -> None:
@@ -106,6 +140,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data = hass.data.setdefault(DOMAIN, {})
     domain_data[entry.entry_id] = entry
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+
+    # Write credentials to private file for OpenClaw sync script
+    _write_credentials(hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

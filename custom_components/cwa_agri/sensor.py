@@ -74,19 +74,19 @@ class CwaAgriSettingsSensor(CwaAgriBaseEntity):
         self.entity_id = f"sensor.cwa_agri_{farm_slug}_settings"
         self._attr_unique_id = f"{ENTITY_PREFIX}_{config_entry.entry_id}_settings"
 
-    def _merged_config(self) -> dict:
+    def _safe_config(self) -> dict:
+        """Config without sensitive fields - safe to expose in HA states."""
         data = dict(self._config_entry.data)
+        data.pop(CONF_HA_TOKEN, None)  # never expose token
         data[CONF_HA_URL] = normalize_ha_url(data.get(CONF_HA_URL))
         data[CONF_CROPS] = get_merged_crops(self._config_entry)
         return data
 
     @property
     def extra_state_attributes(self):
-        data = self._merged_config()
+        data = self._safe_config()
         return {
             CONF_FARM_NAME: data.get(CONF_FARM_NAME, ""),
-            CONF_HA_URL: data.get(CONF_HA_URL, ""),
-            CONF_HA_TOKEN: data.get(CONF_HA_TOKEN, ""),
             CONF_LATITUDE: data.get(CONF_LATITUDE, ""),
             CONF_LONGITUDE: data.get(CONF_LONGITUDE, ""),
             CONF_REGION: data.get(CONF_REGION, ""),
@@ -98,7 +98,7 @@ class CwaAgriSettingsSensor(CwaAgriBaseEntity):
 
     @property
     def native_value(self):
-        return json.dumps(self._merged_config(), ensure_ascii=False)
+        return json.dumps(self._safe_config(), ensure_ascii=False)
 
 
 class CwaAgriCropSensor(CwaAgriBaseEntity):
