@@ -2,7 +2,7 @@ class CwaAgriReportCard extends HTMLElement {
   setConfig(config) {
     this.config = {
       entity: 'sensor.cwa_agri_report',
-      title: '農業氣象報告 v5.1',
+      title: '農業氣象報告 v5.2',
       days: 7,
       ...config,
     };
@@ -138,15 +138,15 @@ class CwaAgriReportCard extends HTMLElement {
     const styles = `
       <style>
         ha-card { display:block; }
-        .card { padding: 18px; font-size: 15px; line-height: 1.65; }
-        .pad { padding: 16px; }
+        .card { padding: 12px; font-size: 14px; line-height: 1.55; }
+        .pad { padding: 12px; }
         .muted { color: var(--secondary-text-color); }
         .hero-card {
           display: grid;
           grid-template-columns: 1.6fr 0.9fr;
-          gap: 12px;
-          padding: 16px;
-          border-radius: 18px;
+          gap: 8px;
+          padding: 10px 12px;
+          border-radius: 14px;
           background: linear-gradient(135deg, rgba(33,150,243,.10), rgba(76,175,80,.08));
           border: 1px solid rgba(33,150,243,.16);
         }
@@ -154,50 +154,50 @@ class CwaAgriReportCard extends HTMLElement {
           display:flex;
           align-items:center;
           justify-content:space-between;
-          gap:12px;
+          gap:8px;
         }
-        .hero-title { font-size: 1.28rem; font-weight: 800; line-height: 1.35; }
-        .hero-sub, .hero-issued { color: var(--secondary-text-color); margin-top: 8px; font-size: .95rem; }
+        .hero-title { font-size: 1.15rem; font-weight: 800; line-height: 1.3; }
+        .hero-sub, .hero-issued { color: var(--secondary-text-color); margin-top: 4px; font-size: .88rem; }
         .hero-side {
-          padding: 12px;
-          border-radius: 14px;
+          padding: 8px 10px;
+          border-radius: 10px;
           background: rgba(255,255,255,.42);
           text-align: right;
         }
-        .hero-temp { font-size: 1.35rem; font-weight: 800; line-height: 1.3; }
-        .hero-weather { margin-top: 8px; font-weight: 600; font-size: 1rem; }
+        .hero-temp { font-size: 1.2rem; font-weight: 800; line-height: 1.3; }
+        .hero-weather { margin-top: 4px; font-weight: 600; font-size: .92rem; }
         .build-tag {
           display:inline-block;
-          padding:4px 10px;
+          padding:3px 8px;
           border-radius:999px;
           background: rgba(33, 150, 243, 0.16);
           color: var(--primary-color);
-          font-size: .78rem;
+          font-size: .72rem;
           font-weight: 700;
           white-space: nowrap;
         }
         .chip-row {
           display:flex;
           flex-wrap:wrap;
-          gap:8px;
-          margin-top:12px;
+          gap:6px;
+          margin-top:8px;
         }
         .chip {
           display:inline-flex;
-          gap:6px;
+          gap:4px;
           align-items:center;
-          padding:6px 10px;
+          padding:4px 8px;
           border-radius:999px;
           background: var(--secondary-background-color);
-          font-size: .82rem;
+          font-size: .78rem;
         }
         .chip-label { color: var(--secondary-text-color); }
         .chip-value { font-weight: 700; }
         .alert-banner {
-          margin-top: 14px;
-          padding: 14px 16px;
-          border-radius: 16px;
-          border-left: 5px solid transparent;
+          margin-top: 10px;
+          padding: 10px 12px;
+          border-radius: 12px;
+          border-left: 4px solid transparent;
         }
         .alert-banner.warn {
           background: rgba(245, 124, 0, 0.12);
@@ -207,65 +207,69 @@ class CwaAgriReportCard extends HTMLElement {
           background: rgba(56, 142, 60, 0.10);
           border-left-color: rgba(56, 142, 60, 0.9);
         }
-        .alert-title { font-weight: 800; margin-bottom: 4px; }
+        .alert-title { font-weight: 800; margin-bottom: 2px; }
         .alert-text { font-weight: 600; }
-        .alert-sub { margin-top: 6px; color: var(--secondary-text-color); }
+        .alert-sub { margin-top: 4px; color: var(--secondary-text-color); font-size: .88rem; }
         .grid {
           display:grid;
-          gap: 12px;
-          margin-top: 14px;
+          gap: 8px;
+          margin-top: 10px;
         }
         .grid.two {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .section-card {
-          padding: 14px;
-          border-radius: 16px;
+          padding: 10px 12px;
+          border-radius: 12px;
           background: var(--ha-card-background, var(--card-background-color));
           box-shadow: inset 0 0 0 1px rgba(127,127,127,0.12);
         }
         .section-title {
-          font-size: 1.02rem;
+          font-size: .95rem;
           font-weight: 800;
-          margin-bottom: 12px;
+          margin-bottom: 8px;
         }
         .bullet-list {
           margin: 0;
-          padding-left: 18px;
+          padding-left: 16px;
         }
-        .bullet-list li { margin: 8px 0; }
+        .bullet-list li { margin: 4px 0; }
         .info-row {
           display:grid;
-          grid-template-columns: 88px 1fr;
-          gap: 12px;
-          padding: 10px 0;
+          grid-template-columns: 72px 1fr;
+          gap: 8px;
+          padding: 6px 0;
           border-bottom: 1px solid rgba(127,127,127,0.12);
         }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .info-label { color: var(--secondary-text-color); font-weight: 700; }
-        .info-value { line-height: 1.75; word-break: break-word; }
+        .info-label { color: var(--secondary-text-color); font-weight: 700; font-size: .88rem; }
+        .info-value { line-height: 1.6; word-break: break-word; font-size: .9rem; }
         .forecast-summary {
           color: var(--secondary-text-color);
-          margin-bottom: 10px;
+          margin-bottom: 6px;
+          font-size: .88rem;
         }
         .forecast-cards {
           display:grid;
-          grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
-          gap: 10px;
+          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+          gap: 6px;
+          max-height: 220px;
+          overflow-y: auto;
         }
         .forecast-card {
-          padding: 14px 12px;
-          border-radius: 14px;
+          padding: 8px 6px;
+          border-radius: 10px;
           background: var(--secondary-background-color);
           text-align:center;
         }
-        .forecast-date { font-weight: 800; }
-        .forecast-icon { font-size: 1.5rem; margin-top: 8px; }
-        .forecast-weather { margin-top: 6px; font-weight: 600; }
-        .forecast-temp { margin-top: 6px; }
-        .forecast-meta { margin-top: 4px; color: var(--secondary-text-color); font-size: .82rem; }
+        .forecast-date { font-weight: 800; font-size: .85rem; }
+        .forecast-icon { font-size: 1.2rem; margin-top: 4px; }
+        .forecast-weather { margin-top: 2px; font-weight: 600; font-size: .8rem; }
+        .forecast-temp { margin-top: 2px; font-size: .85rem; }
+        .forecast-meta { margin-top: 2px; color: var(--secondary-text-color); font-size: .75rem; }
         .note-card { color: var(--secondary-text-color); }
-        .note-line + .note-line { margin-top: 6px; }
+        .note-line + .note-line { margin-top: 4px; }
+        .note-card { max-height: 120px; overflow-y: auto; }
         @media (max-width: 800px) {
           .hero-card,
           .grid.two {
@@ -274,8 +278,8 @@ class CwaAgriReportCard extends HTMLElement {
           .hero-side {
             text-align:left;
           }
-          .card { padding: 16px; font-size: 15px; }
-          .info-row { grid-template-columns: 80px 1fr; gap: 10px; }
+          .card { padding: 12px; font-size: 14px; }
+          .info-row { grid-template-columns: 68px 1fr; gap: 6px; }
         }
       </style>
     `;
@@ -288,7 +292,7 @@ class CwaAgriReportCard extends HTMLElement {
             <div class="hero-main">
               <div class="hero-title-row">
                 <div class="hero-title">${this._esc(a.risk_icon || '🌱')} ${this._esc(a.farm_name || '農場')}</div>
-                <div class="build-tag">v5.1 · build type-tune</div>
+                <div class="build-tag">v5.2 · build compact</div>
               </div>
               <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')}</div>
               <div class="chip-row">${statusChips}</div>
