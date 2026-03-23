@@ -117,13 +117,12 @@ Dashboard 🔄 → button.cwa_agri_refresh → HA service
 
 | 版本 | 重點 |
 |------|------|
-| v2.0 | 簡化安裝流程、多值作物輸入 |
-| v2.1 | 半自動 stage assistant |
-| v2.2 | Dashboard card 內建進 integration |
-| v1.3.0 | sync_and_report.js wrapper、多站台支援 |
+| v1.2.0 | Dashboard card 內建進 integration |
+| v1.2.1 | 多站台 sync 支援 |
+| v1.3.0 | sync_and_report.js wrapper、作物 object 格式 |
 | v1.3.1 | Demo sensor（首次安裝預覽） |
-| v1.3.2 | 憑證安全（ha_token 不暴露） |
-| v1.3.3 | 手動刷新按鈕 + bridge |
+| v1.3.2 | 憑證安全（ha_token 私有化，不暴露在 entity 屬性） |
+| v1.3.3 | 手動刷新按鈕 + bridge HTTP→WS |
 
 ---
 
