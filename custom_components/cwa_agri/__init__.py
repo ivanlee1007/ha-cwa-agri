@@ -44,6 +44,8 @@ def _write_credentials(hass: HomeAssistant, entry: ConfigEntry) -> None:
         "longitude": entry.data.get(CONF_LONGITUDE),
         "crops": get_merged_crops(entry),
         "report_sensor_entity": DEFAULT_REPORT_SENSOR_ENTITY,
+        # Refresh bridge URL for the dashboard button (HA → OpenClaw)
+        "refresh_bridge_url": entry.options.get("refresh_bridge_url", "http://192.168.1.226:18801"),
     }
     path = Path(hass.config.config_dir) / _CREDENTIALS_FILE
     try:

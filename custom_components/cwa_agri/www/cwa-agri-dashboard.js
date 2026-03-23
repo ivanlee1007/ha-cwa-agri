@@ -2,7 +2,7 @@ class CwaAgriReportCard extends HTMLElement {
   setConfig(config) {
     this.config = {
       entity: 'sensor.cwa_agri_report',
-      title: '農業氣象報告 v5.3',
+      title: '農業氣象報告 v5.4',
       days: 7,
       ...config,
     };
@@ -16,6 +16,15 @@ class CwaAgriReportCard extends HTMLElement {
 
   getCardSize() {
     return 10;
+  }
+
+  async _onRefresh() {
+    if (!this._hass) return;
+    try {
+      await this._hass.callService('button', 'press', { entity_id: 'button.cwa_agri_refresh' });
+    } catch (e) {
+      console.error('[CWA Agri] refresh failed:', e);
+    }
   }
 
   _esc(value) {
@@ -168,7 +177,9 @@ class CwaAgriReportCard extends HTMLElement {
         .hero-temp { font-size: 1.2rem; font-weight: 800; line-height: 1.3; }
         .hero-weather { margin-top: 4px; font-weight: 600; font-size: .92rem; }
         .build-tag {
-          display:inline-block;
+          display:inline-flex;
+          align-items:center;
+          gap:4px;
           padding:3px 8px;
           border-radius:999px;
           background: rgba(33, 150, 243, 0.16);
@@ -177,6 +188,11 @@ class CwaAgriReportCard extends HTMLElement {
           font-weight: 700;
           white-space: nowrap;
         }
+        .refresh-btn {
+          background:none;border:none;cursor:pointer;font-size:.85rem;padding:0 2px;
+          transition:transform .3s;
+        }
+        .refresh-btn:hover { transform:rotate(90deg); }
         .chip-row {
           display:flex;
           flex-wrap:wrap;
@@ -297,7 +313,10 @@ class CwaAgriReportCard extends HTMLElement {
             <div class="hero-main">
               <div class="hero-title-row">
                 <div class="hero-title">${this._esc(a.risk_icon || '🌱')} ${this._esc(a.farm_name || '農場')}</div>
-                <div class="build-tag">v5.3 · build demo</div>
+                <div class="build-tag">
+                  <button class="refresh-btn" @click="${this._onRefresh.bind(this)}" title="重新整理氣象報告">🔄</button>
+                  v5.4
+                </div>
               </div>
               <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')}</div>
               <div class="chip-row">${statusChips}</div>
