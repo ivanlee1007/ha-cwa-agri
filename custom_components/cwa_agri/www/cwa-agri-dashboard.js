@@ -2,7 +2,7 @@ class CwaAgriReportCard extends HTMLElement {
   setConfig(config) {
     this.config = {
       entity: 'sensor.cwa_agri_report',
-      title: '農業氣象報告 v5.2',
+      title: '農業氣象報告 v5.3',
       days: 7,
       ...config,
     };
@@ -133,6 +133,7 @@ class CwaAgriReportCard extends HTMLElement {
 
     const bannerText = fs.warning_headline || a.warning_headline || '';
     const hasWarning = Boolean(bannerText);
+    const isDemo = stateObj.state === 'demo';
     const currentSummary = [fs.headline, fs.weather].filter(Boolean).join('｜');
 
     const styles = `
@@ -206,6 +207,10 @@ class CwaAgriReportCard extends HTMLElement {
         .alert-banner.ok {
           background: rgba(56, 142, 60, 0.10);
           border-left-color: rgba(56, 142, 60, 0.9);
+        }
+        .alert-banner.demo {
+          background: rgba(33, 150, 243, 0.10);
+          border-left-color: rgba(33, 150, 243, 0.9);
         }
         .alert-title { font-weight: 800; margin-bottom: 2px; }
         .alert-text { font-weight: 600; }
@@ -292,7 +297,7 @@ class CwaAgriReportCard extends HTMLElement {
             <div class="hero-main">
               <div class="hero-title-row">
                 <div class="hero-title">${this._esc(a.risk_icon || '🌱')} ${this._esc(a.farm_name || '農場')}</div>
-                <div class="build-tag">v5.2 · build compact</div>
+                <div class="build-tag">v5.3 · build demo</div>
               </div>
               <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')}</div>
               <div class="chip-row">${statusChips}</div>
@@ -304,10 +309,15 @@ class CwaAgriReportCard extends HTMLElement {
             </div>
           </div>
 
-          <div class="alert-banner ${hasWarning ? 'warn' : 'ok'}">
-            <div class="alert-title">${hasWarning ? '⚠️ 目前提醒' : '✅ 今日狀態'}</div>
-            <div class="alert-text">${this._esc(hasWarning ? bannerText : '目前沒有額外即時警報，可照排程作業')}</div>
-            ${fs.tonight_warning_note ? `<div class="alert-sub">${this._esc(fs.tonight_warning_note)}</div>` : ''}
+          <div class="alert-banner ${isDemo ? 'demo' : hasWarning ? 'warn' : 'ok'}">
+            ${isDemo ? `
+              <div class="alert-title">📋 示範報表</div>
+              <div class="alert-text">這是安裝後的預覽資料，請執行 OpenClaw sync_and_report.js 推送真實報表</div>
+            ` : `
+              <div class="alert-title">${hasWarning ? '⚠️ 目前提醒' : '✅ 今日狀態'}</div>
+              <div class="alert-text">${this._esc(hasWarning ? bannerText : '目前沒有額外即時警報，可照排程作業')}</div>
+              ${fs.tonight_warning_note ? `<div class="alert-sub">${this._esc(fs.tonight_warning_note)}</div>` : ''}
+            `}
           </div>
 
           <div class="grid two">
