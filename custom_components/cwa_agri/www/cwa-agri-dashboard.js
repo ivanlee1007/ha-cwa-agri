@@ -221,6 +221,12 @@ class CwaAgriReportCard extends HTMLElement {
           font-weight: 700;
           white-space: nowrap;
         }
+        .upload-time {
+          font-size: .65rem;
+          font-weight: 400;
+          opacity: .55;
+          margin-left: 2px;
+        }
         .refresh-btn {
           background:none;border:none;cursor:pointer;font-size:.85rem;padding:0 2px;
           transition:transform .3s;
@@ -349,6 +355,7 @@ class CwaAgriReportCard extends HTMLElement {
                 <div class="build-tag">
                   <button class="refresh-btn" id="cwa-refresh-btn" title="重新整理氣象報告">🔄</button>
                   v5.6
+                  <span class="upload-time">${this._esc(this._fmtIssued(a.pushed_at || '-'))}</span>
                 </div>
               </div>
               <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')}</div>
@@ -358,7 +365,6 @@ class CwaAgriReportCard extends HTMLElement {
               <div class="hero-temp">${this._esc(a.temp_min ?? '-')}° ~ ${this._esc(a.temp_max ?? '-')}°</div>
               <div class="hero-weather">${this._esc(a.current_weather || '-')}</div>
               <div class="hero-issued">更新：${this._esc(this._fmtIssued(a.issued_at || '-'))}</div>
-              <div class="hero-issued">上傳：${this._esc(this._fmtIssued(a.pushed_at || '-'))}</div>
             </div>
           </div>
 
