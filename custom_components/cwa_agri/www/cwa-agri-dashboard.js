@@ -221,6 +221,7 @@ class CwaAgriReportCard extends HTMLElement {
           font-weight: 700;
           white-space: nowrap;
         }
+        .upload-time { font-size: .78rem; opacity: .7; }
         .refresh-btn {
           background:none;border:none;cursor:pointer;font-size:.85rem;padding:0 2px;
           transition:transform .3s;
@@ -349,10 +350,9 @@ class CwaAgriReportCard extends HTMLElement {
                 <div class="build-tag">
                   <button class="refresh-btn" id="cwa-refresh-btn" title="重新整理氣象報告">🔄</button>
                   v5.6
-                  <span class="upload-time">${this._esc(this._fmtIssued(a.pushed_at || '-'))}</span>
                 </div>
               </div>
-              <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')}</div>
+              <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')} <span class="upload-time">${this._esc(this._fmtIssued(a.pushed_at || '-'))}</span></div>
               <div class="chip-row">${statusChips}</div>
             </div>
             <div class="hero-side">
