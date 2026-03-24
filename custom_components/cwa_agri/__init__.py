@@ -6,15 +6,11 @@ import json
 import logging
 from pathlib import Path
 
-from homeassistant.components import frontend
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
-    CARD_RESOURCE_URL,
-    CARD_STATIC_URL,
     CONF_CROPS,
     CONF_FARM_NAME,
     CONF_HA_TOKEN,
@@ -106,28 +102,10 @@ def _ensure_demo_sensor(hass: HomeAssistant) -> None:
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up CWA Agri integration domain data and bundled dashboard card."""
-    domain_data = hass.data.setdefault(DOMAIN, {})
+    hass.data.setdefault(DOMAIN, {})
 
-    if not domain_data.get("card_static_registered"):
-        card_path = Path(__file__).parent / "www" / "cwa-agri-dashboard.js"
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    CARD_STATIC_URL,
-                    str(card_path),
-                    cache_headers=False,
-                )
-            ]
-        )
-        domain_data["card_static_registered"] = True
-        domain_data["card_resource_url"] = CARD_RESOURCE_URL
-        _LOGGER.info("Registered bundled CWA dashboard card at %s", CARD_STATIC_URL)
-
-    # JS resource is persisted in .storage/lovelace_resources (loaded by frontend on every page).
-    # Static path above serves as the HTTP handler for /cwa_agri_static/ URLs.
-    if not domain_data.get("card_resource_registered"):
-        domain_data["card_resource_registered"] = True
-        _LOGGER.info("CWA dashboard card resource: persisted via .storage/lovelace_resources")
+    # Dashboard card JS is persisted in .storage/lovelace_resources via /local/ path.
+    # See TROUBLESHOOTING.md for details on the JS loading architecture.
 
     _ensure_demo_sensor(hass)
     return True

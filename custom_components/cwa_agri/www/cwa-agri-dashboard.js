@@ -476,7 +476,7 @@ for (const name of methods) {
     Object.getOwnPropertyDescriptor(realProto, name)
   );
 }
-console.log('[CWA Agri] card registered: stub + ' + methods.length + ' methods patched');
+console.debug('[CWA Agri] card registered: stub + ' + methods.length + ' methods patched');
 
 // 3. 升級已存在的元素（若 Lovelace 已初始化了 stub 實例）
 const stubClass = customElements.get('cwa-agri-report-card');
