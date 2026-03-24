@@ -7,6 +7,8 @@ import logging
 import shutil
 from pathlib import Path
 
+from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
@@ -31,7 +33,7 @@ _CREDENTIALS_FILE = "cwa_credentials.json"
 # Frontend card paths
 _CARD_SRC_NAME = "cwa-agri-dashboard.js"
 _CARD_DIR_NAME = "cwa_agri"
-_CARD_VERSION = "1.4.5"
+_CARD_VERSION = "1.4.6"
 
 
 def _get_card_src(hass: HomeAssistant) -> Path:
@@ -48,53 +50,52 @@ def _get_resources_path(hass: HomeAssistant) -> Path:
     return Path(hass.config.config_dir) / ".storage" / "lovelace_resources"
 
 
-def _resource_url() -> str:
-    return f"/local/{_CARD_DIR_NAME}/{_CARD_SRC_NAME}?v={_CARD_VERSION}"
+_CARD_JS_URL = "/cwa_agri_static/cwa-agri-dashboard.js"
 
 
-def _install_card(hass: HomeAssistant) -> bool:
-    """Copy JS to www/ and register in lovelace_resources. Returns True if newly installed."""
+def _install_card_js(hass: HomeAssistant) -> bool:
+    """Copy JS to www/ for persistence. Returns True if successful."""
     src = _get_card_src(hass)
     dst = _get_card_dst(hass)
-    res_path = _get_resources_path(hass)
 
     if not src.exists():
         _LOGGER.warning("Card JS not found at %s", src)
         return False
 
-    # 1. Copy JS file (always overwrite to keep version in sync)
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dst)
     _LOGGER.info("Card JS installed to %s", dst)
+    return True
 
-    # 2. Register in lovelace_resources (idempotent)
-    url = _resource_url()
+
+def _register_lovelace_resource(hass: HomeAssistant) -> None:
+    """Register card resource in lovelace_resources (idempotent)."""
+    res_path = _get_resources_path(hass)
+    url = _CARD_JS_URL
+
     try:
         with open(res_path, encoding="utf-8") as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        data = {"data": {"resources": []}, "key": "lovelace_resources"}
+        data = {"data": {"resources": [], "items": []}, "key": "lovelace_resources"}
 
-    resources = data.get("data", {}).get("resources", [])
-    existing = [r for r in resources if _CARD_DIR_NAME in r.get("url", "")]
-    if existing:
-        # Update version in existing entry
-        for r in existing:
-            r["url"] = url
-        _LOGGER.debug("Card resource already registered, updated URL")
-    else:
-        resources.append({"url": url, "type": "module"})
-        _LOGGER.info("Card resource added to lovelace_resources")
+    for arr_name in ("resources", "items"):
+        arr = data.get("data", {}).get(arr_name, [])
+        existing = [r for r in arr if _CARD_DIR_NAME in r.get("url", "")]
+        if existing:
+            for r in existing:
+                r["url"] = url
+        else:
+            arr.append({"url": url, "type": "module"})
 
-    data.setdefault("data", {})["resources"] = resources
+    data["data"]["resources"] = data.get("data", {}).get("resources", [])
+    data["data"]["items"] = data.get("data", {}).get("items", [])
     try:
         with open(res_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
             f.write("\n")
     except OSError as err:
         _LOGGER.warning("Failed to write lovelace_resources: %s", err)
-
-    return True
 
 
 def _uninstall_card(hass: HomeAssistant) -> None:
@@ -207,9 +208,20 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up CWA Agri integration domain data and bundled dashboard card."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Auto-install dashboard card JS to www/ and register in lovelace_resources.
-    # This runs on every HA restart (idempotent) — keeps JS version in sync.
-    await hass.async_add_executor_job(_install_card, hass)
+    # Copy JS to www/ for persistence (idempotent, runs every restart)
+    await hass.async_add_executor_job(_install_card_js, hass)
+
+    # Register static path so HA serves the JS file directly
+    src = _get_card_src(hass)
+    if src.exists():
+        await hass.http.async_register_static_paths([
+            StaticPathConfig(
+                _CARD_JS_URL,
+                str(src),
+                cache_headers=True,
+            )
+        ])
+        _LOGGER.info("Registered card static path: %s -> %s", _CARD_JS_URL, src)
 
     _ensure_demo_sensor(hass)
     return True
@@ -218,6 +230,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up CWA Agri from a config entry."""
     _LOGGER.info("Setting up CWA Agri integration for %s", entry.title)
+
+    # Register JS with frontend (must be in async_setup_entry, not async_setup,
+    # so the frontend component is fully initialized)
+    add_extra_js_url(hass, _CARD_JS_URL)
+    _LOGGER.info("Card JS registered with frontend: %s", _CARD_JS_URL)
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     domain_data[entry.entry_id] = entry
