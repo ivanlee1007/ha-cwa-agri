@@ -31,7 +31,7 @@ _CREDENTIALS_FILE = "cwa_credentials.json"
 # Frontend card paths
 _CARD_SRC_NAME = "cwa-agri-dashboard.js"
 _CARD_DIR_NAME = "cwa_agri"
-_CARD_VERSION = "1.4.4"
+_CARD_VERSION = "1.4.5"
 
 
 def _get_card_src(hass: HomeAssistant) -> Path:
