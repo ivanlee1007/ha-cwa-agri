@@ -352,7 +352,7 @@ class CwaAgriReportCard extends HTMLElement {
                   v5.6
                 </div>
               </div>
-              <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')} <span class="upload-time">${this._esc(this._fmtIssued(a.pushed_at || '-'))}</span></div>
+              <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')} <span class="upload-time">${this._esc((this._fmtIssued(a.pushed_at) || '-').split(' ').pop())}</span></div>
               <div class="chip-row">${statusChips}</div>
             </div>
             <div class="hero-side">
