@@ -41,9 +41,19 @@ class CwaAgriReportCard extends HTMLElement {
   }
 
   async _onRefresh() {
-    if (!this._hass) return;
+    console.log('[CWA Agri] _onRefresh called', {
+      hasHass: !!this._hass,
+      entityId: this.config?.entity,
+      btnExists: !!this.querySelector('#cwa-refresh-btn')
+    });
+    if (!this._hass) {
+      console.warn('[CWA Agri] _onRefresh skipped: no _hass');
+      return;
+    }
     try {
+      console.log('[CWA Agri] calling button.press...');
       await this._hass.callService('button', 'press', { entity_id: 'button.cwa_agri_refresh' });
+      console.log('[CWA Agri] button.press OK');
     } catch (e) {
       console.error('[CWA Agri] refresh failed:', e);
     }
@@ -421,7 +431,11 @@ class CwaAgriReportCard extends HTMLElement {
     // 綁定刷新按鈕（直接在 render 後綁定，不依賴 connectedCallback）
     const btn = this.querySelector('#cwa-refresh-btn');
     if (btn) {
-      btn.onclick = () => this._onRefresh();
+      btn.onclick = () => {
+        console.log('[CWA Agri] refresh button clicked via onclick');
+        this._onRefresh();
+      };
+      console.log('[CWA Agri] refresh onclick bound');
     }
   }
 
