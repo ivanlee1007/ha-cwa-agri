@@ -455,20 +455,17 @@ if (!customElements.get('cwa-agri-report-card')) {
 }
 
 // 2. 將 real class 的 methods patch 到 stub prototype
-Object.assign(CwaAgriReportCard.prototype, {
-  // 已有的方法會覆蓋 stub 的 _cwaRender
-});
-
-// 把 real class 的非構造函數方法複製到 stub prototype
+const stubProto = customElements.get('cwa-agri-report-card').prototype;
 const realProto = CwaAgriReportCard.prototype;
 const methods = Object.getOwnPropertyNames(realProto).filter(n => n !== 'constructor');
 for (const name of methods) {
   Object.defineProperty(
-    customElements.get('cwa-agri-report-card').prototype,
+    stubProto,
     name,
     Object.getOwnPropertyDescriptor(realProto, name)
   );
 }
+console.log('[CWA Agri] card registered: stub + ' + methods.length + ' methods patched');
 
 // 3. 升級已存在的元素（若 Lovelace 已初始化了 stub 實例）
 const stubClass = customElements.get('cwa-agri-report-card');
