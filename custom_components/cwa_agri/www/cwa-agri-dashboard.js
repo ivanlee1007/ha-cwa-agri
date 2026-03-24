@@ -1,26 +1,35 @@
 class CwaAgriReportCard extends HTMLElement {
   setConfig(config) {
-    this.config = {
-      entity: 'sensor.cwa_agri_report',
-      title: '農業氣象報告 v5.5',
-      days: 7,
-      ...config,
-    };
-    if (!this.config.entity) throw new Error('entity is required');
-    // 延遲啟動輪詢，等 hass 設定
-    setTimeout(() => this._pollForEntity(), 500);
+    try {
+      this.config = {
+        entity: 'sensor.cwa_agri_report',
+        title: '農業氣象報告 v5.5',
+        days: 7,
+        ...config,
+      };
+      if (!this.config.entity) throw new Error('entity is required');
+      this._setConfigDone = true;
+      // 延遲啟動輪詢，等 hass 設定
+      setTimeout(() => this._pollForEntity(), 500);
+    } catch (e) {
+      throw e;
+    }
   }
 
   set hass(hass) {
-    this._hass = hass;
-    this.render();
-    // Entity 出現後清除輪詢
-    if (this._pollTimer) {
-      const stateObj = hass.states[this.config?.entity];
-      if (stateObj) {
-        clearTimeout(this._pollTimer);
-        this._pollTimer = null;
+    try {
+      this._hass = hass;
+      this.render();
+      // Entity 出現後清除輪詢
+      if (this._pollTimer) {
+        const stateObj = hass.states[this.config?.entity];
+        if (stateObj) {
+          clearTimeout(this._pollTimer);
+          this._pollTimer = null;
+        }
       }
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -129,7 +138,9 @@ class CwaAgriReportCard extends HTMLElement {
   }
 
   render() {
-    if (!this._hass || !this.config) return;
+    if (!this._hass || !this.config) {
+      return;
+    }
     const stateObj = this._hass.states[this.config.entity];
     if (!stateObj) {
       this.innerHTML = `<ha-card><div class="pad">找不到 entity：${this._esc(this.config.entity)}</div></ha-card>`;

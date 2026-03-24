@@ -123,10 +123,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         domain_data["card_resource_url"] = CARD_RESOURCE_URL
         _LOGGER.info("Registered bundled CWA dashboard card at %s", CARD_STATIC_URL)
 
+    # JS resource is persisted in .storage/lovelace_resources (loaded by frontend on every page).
+    # Static path above serves as the HTTP handler for /cwa_agri_static/ URLs.
     if not domain_data.get("card_resource_registered"):
-        frontend.add_extra_js_url(hass, domain_data.get("card_resource_url", CARD_RESOURCE_URL))
         domain_data["card_resource_registered"] = True
-        _LOGGER.info("Auto-loaded bundled dashboard card resource: %s", domain_data.get("card_resource_url", CARD_RESOURCE_URL))
+        _LOGGER.info("CWA dashboard card resource: persisted via .storage/lovelace_resources")
 
     _ensure_demo_sensor(hass)
     return True
