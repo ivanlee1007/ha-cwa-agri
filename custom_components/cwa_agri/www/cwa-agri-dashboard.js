@@ -221,12 +221,6 @@ class CwaAgriReportCard extends HTMLElement {
           font-weight: 700;
           white-space: nowrap;
         }
-        .upload-time {
-          font-size: .65rem;
-          font-weight: 400;
-          opacity: .55;
-          margin-left: 2px;
-        }
         .refresh-btn {
           background:none;border:none;cursor:pointer;font-size:.85rem;padding:0 2px;
           transition:transform .3s;
