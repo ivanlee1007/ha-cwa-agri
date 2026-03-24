@@ -81,11 +81,14 @@ title: 農業氣象報告
 - 右上角 🔄 按鈕可手動刷新
 - 卡片 v5.4+ 支援 compact layout
 
-若出現 `Custom element doesn't exist`：
-1. 確認 `ha-cwa-agri` 已更新到最新版
+若出現 `Custom element doesn't exist` 或「設定錯誤」：
+
+1. 確認 `ha-cwa-agri` 已更新到最新版（v1.4.3+）
 2. 重啟 Home Assistant
-3. 移除舊的 `cwa-agri-dashboard` HACS repo / Resource（避免衝突）
-4. 瀏覽器硬重新整理（Ctrl+Shift+R）
+3. 瀏覽器硬重新整理（Ctrl+Shift+R）
+4. 按 F12 打開 DevTools → Console，篩選 `CWA`，確認看到 `[CWA Agri] card registered`
+
+> **注意**：JS 檔案安裝在 `/config/www/cwa_agri/`，透過 `/local/` 路徑載入（HA 原生支援，不依賴 integration 運作）。若硬刷新後偶爾出現「設定錯誤」，請嘗試：關閉所有 Chrome 分頁 → 重新開啟 → Ctrl+Shift+R。詳細故障排除請參考 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)。
 
 ---
 
@@ -123,6 +126,10 @@ Dashboard 🔄 → button.cwa_agri_refresh → HA service
 | v1.3.1 | Demo sensor（首次安裝預覽） |
 | v1.3.2 | 憑證安全（ha_token 私有化，不暴露在 entity 屬性） |
 | v1.3.3 | 手動刷新按鈕 + bridge HTTP→WS |
+| v1.4.0 | 22 縣市名稱自動映射到農業氣象地區 |
+| v1.4.1 | 品牌更名 UNiNUS CWA Agri |
+| v1.4.2 | 縣市選擇改為下拉選單（DROPDOWN） |
+| v1.4.3 | 刷新按鈕修復 + stub-first 註冊 + JS 改用 /local/ 路徑持久化 |
 
 ---
 
