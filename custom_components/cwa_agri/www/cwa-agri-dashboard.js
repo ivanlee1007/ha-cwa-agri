@@ -7,11 +7,33 @@ class CwaAgriReportCard extends HTMLElement {
       ...config,
     };
     if (!this.config.entity) throw new Error('entity is required');
+    // 延遲啟動輪詢，等 hass 設定
+    setTimeout(() => this._pollForEntity(), 500);
   }
 
   set hass(hass) {
     this._hass = hass;
     this.render();
+    // Entity 出現後清除輪詢
+    if (this._pollTimer) {
+      const stateObj = hass.states[this.config?.entity];
+      if (stateObj) {
+        clearTimeout(this._pollTimer);
+        this._pollTimer = null;
+      }
+    }
+  }
+
+  _pollForEntity(retries = 0) {
+    if (!this._hass || !this.config) return;
+    const stateObj = this._hass.states[this.config.entity];
+    if (stateObj) {
+      this.render();
+      return;
+    }
+    if (retries < 10) {
+      this._pollTimer = setTimeout(() => this._pollForEntity(retries + 1), 2000);
+    }
   }
 
   getCardSize() {
