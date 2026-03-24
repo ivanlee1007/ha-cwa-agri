@@ -434,9 +434,55 @@ class CwaAgriReportCard extends HTMLElement {
   }
 }
 
+// ===== Custom Element Registration =====
+// 策略：stub 先注册（解決時序），real methods 後 patch
+// 這樣即使 JS 載入中途 Lovelace 就初始化卡片，stub 也能先hold住
+
+// 1. 先注册輕量 stub（確保 Lovelace 不報「設定錯誤」）
 if (!customElements.get('cwa-agri-report-card')) {
-  customElements.define('cwa-agri-report-card', CwaAgriReportCard);
+  customElements.define('cwa-agri-report-card', class extends HTMLElement {
+    setConfig(config) {
+      this._cwaConfig = config;
+      this._cwaRender();
+    }
+    set hass(h) { this._cwaHass = h; this._cwaRender(); }
+    _cwaRender() {
+      // stub render: 等 real class patch 後再完整渲染
+      if (!this._cwaConfig) return;
+      this.innerHTML = '<ha-card><div class="card-content" style="text-align:center;padding:12px;color:var(--secondary-text-color)">🔄 載入報告中...</div></ha-card>';
+    }
+  });
 }
+
+// 2. 將 real class 的 methods patch 到 stub prototype
+Object.assign(CwaAgriReportCard.prototype, {
+  // 已有的方法會覆蓋 stub 的 _cwaRender
+});
+
+// 把 real class 的非構造函數方法複製到 stub prototype
+const realProto = CwaAgriReportCard.prototype;
+const methods = Object.getOwnPropertyNames(realProto).filter(n => n !== 'constructor');
+for (const name of methods) {
+  Object.defineProperty(
+    customElements.get('cwa-agri-report-card').prototype,
+    name,
+    Object.getOwnPropertyDescriptor(realProto, name)
+  );
+}
+
+// 3. 升級已存在的元素（若 Lovelace 已初始化了 stub 實例）
+const stubClass = customElements.get('cwa-agri-report-card');
+document.querySelectorAll('cwa-agri-report-card').forEach(el => {
+  if (el._cwaConfig) {
+    // 已有 setConfig 的 stub 實例，重新觸發
+    const cfg = el._cwaConfig;
+    const h = el._cwaHass;
+    el.setConfig(cfg);
+    if (h) el.hass = h;
+  }
+});
+
+// 4. customCards registry
 window.customCards = window.customCards || [];
 if (!window.customCards.some((card) => card.type === 'cwa-agri-report-card')) {
   window.customCards.push({
