@@ -3,7 +3,7 @@ class CwaAgriReportCard extends HTMLElement {
     try {
       this.config = {
         entity: 'sensor.cwa_agri_report',
-        title: '農業氣象報告 v5.6',
+        title: '農業氣象報告 v5.7',
         days: 7,
         ...config,
       };
@@ -76,7 +76,11 @@ class CwaAgriReportCard extends HTMLElement {
 
   _fmtIssued(value) {
     if (!value || typeof value !== 'string') return '-';
-    return value.replace('T', ' ').replace(/:\d{2}(?:\.\d+)?([+-]\d{2}:?\d{2}|Z)?$/, '');
+    try {
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return String(value).replace('T', ' ').replace(/:\d{2}(?:\.\d+)?([+-]\d{2}:?\d{2}|Z)?$/, '');
+      return d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch { return String(value).replace('T', ' '); }
   }
 
   _weatherIcon(text) {
