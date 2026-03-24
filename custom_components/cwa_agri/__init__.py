@@ -9,7 +9,6 @@ from pathlib import Path
 from homeassistant.components import frontend
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
@@ -40,8 +39,6 @@ def _write_credentials(hass: HomeAssistant, entry: ConfigEntry) -> None:
         "ha_token": entry.data.get(CONF_HA_TOKEN, ""),
         "farm_name": entry.data.get(CONF_FARM_NAME, ""),
         "region": entry.data.get(CONF_REGION, ""),
-        "latitude": entry.data.get(CONF_LATITUDE),
-        "longitude": entry.data.get(CONF_LONGITUDE),
         "crops": get_merged_crops(entry),
         "report_sensor_entity": DEFAULT_REPORT_SENSOR_ENTITY,
         # Refresh bridge URL for the dashboard button (HA → OpenClaw)

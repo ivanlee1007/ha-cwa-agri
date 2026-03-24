@@ -6,7 +6,6 @@ import json
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -87,8 +86,6 @@ class CwaAgriSettingsSensor(CwaAgriBaseEntity):
         data = self._safe_config()
         return {
             CONF_FARM_NAME: data.get(CONF_FARM_NAME, ""),
-            CONF_LATITUDE: data.get(CONF_LATITUDE, ""),
-            CONF_LONGITUDE: data.get(CONF_LONGITUDE, ""),
             CONF_REGION: data.get(CONF_REGION, ""),
             CONF_CROPS: json.dumps(data.get(CONF_CROPS, []), ensure_ascii=False),
             "crop_count": len(data.get(CONF_CROPS, [])),

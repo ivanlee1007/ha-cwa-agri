@@ -15,9 +15,7 @@
         "title": "位置與初始作物",
         "description": "作物名稱可先填，也可以之後在選項頁面用多值輸入維護；每輸入一個作物後按 Enter 確認。",
         "data": {
-          "latitude": "緯度",
-          "longitude": "經度",
-          "region": "地區（選填）",
+          "region": "地區",
           "crop_names_text": "作物名稱（輸入一個按一次 Enter，可留空）"
         }
       }
@@ -40,14 +38,13 @@
           "farm_name": "農場名稱",
           "ha_url": "Home Assistant URL",
           "ha_token": "長期訪問令牌",
-          "latitude": "緯度",
-          "longitude": "經度",
-          "region": "地區（選填）",
+          "region": "地區",
           "crop_names_text": "作物名稱（輸入一個按一次 Enter）"
         }
       }
     },
     "error": {
+      "required": "此欄位為必填",
       "unknown_error": "發生未知錯誤"
     }
   }

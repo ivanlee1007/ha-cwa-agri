@@ -15,9 +15,7 @@
         "title": "Location and Initial Crops",
         "description": "You may enter crop names now, or maintain them later using a multi-value text field; press Enter after each crop.",
         "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude",
-          "region": "Region (optional)",
+          "region": "Region",
           "crop_names_text": "Crop names (press Enter after each one, optional)"
         }
       }
@@ -40,14 +38,13 @@
           "farm_name": "Farm Name",
           "ha_url": "Home Assistant URL",
           "ha_token": "Long-Lived Access Token",
-          "latitude": "Latitude",
-          "longitude": "Longitude",
-          "region": "Region (optional)",
+          "region": "Region",
           "crop_names_text": "Crop names (press Enter after each one)"
         }
       }
     },
     "error": {
+      "required": "This field is required",
       "unknown_error": "An unknown error occurred"
     }
   }

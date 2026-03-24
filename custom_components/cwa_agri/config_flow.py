@@ -8,7 +8,6 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import callback
 from homeassistant.helpers import selector
 
@@ -76,33 +75,33 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 crop_text = user_input.pop(CONF_CROP_NAMES_TEXT, "")
                 self._data.update(user_input)
+                self._data[CONF_REGION] = user_input.get(CONF_REGION, "").strip()
+                if not self._data[CONF_REGION]:
+                    errors[CONF_REGION] = "required"
                 self._data[CONF_HA_URL] = normalize_ha_url(self._data.get(CONF_HA_URL))
                 self._data[CONF_CROPS] = parse_crop_names(crop_text)
 
-                unique_seed = f"{self._data.get(CONF_HA_URL, '')}::{self._data.get(CONF_FARM_NAME, '')}"
-                unique_id = f"cwa_agri_{uuid.uuid5(uuid.NAMESPACE_URL, unique_seed).hex[:12]}"
-                await self.async_set_unique_id(unique_id)
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=self._data.get(CONF_FARM_NAME, "CWA 農業報告"),
-                    data=self._data,
-                )
+                if not errors:
+                    unique_seed = f"{self._data.get(CONF_HA_URL, '')}::{self._data.get(CONF_FARM_NAME, '')}"
+                    unique_id = f"cwa_agri_{uuid.uuid5(uuid.NAMESPACE_URL, unique_seed).hex[:12]}"
+                    await self.async_set_unique_id(unique_id)
+                    self._abort_if_unique_id_configured()
+                    return self.async_create_entry(
+                        title=self._data.get(CONF_FARM_NAME, "CWA 農業報告"),
+                        data=self._data,
+                    )
             except Exception as err:  # pragma: no cover - defensive
                 _LOGGER.exception("CWA Agri location step error: %s", err)
                 errors["base"] = "unknown_error"
 
         defaults = {
-            CONF_LATITUDE: self.hass.config.latitude,
-            CONF_LONGITUDE: self.hass.config.longitude,
             CONF_REGION: self._data.get(CONF_REGION, ""),
             CONF_CROP_NAMES_TEXT: "",
         }
 
         data_schema = vol.Schema(
             {
-                vol.Optional(CONF_LATITUDE, default=defaults[CONF_LATITUDE]): vol.Coerce(float),
-                vol.Optional(CONF_LONGITUDE, default=defaults[CONF_LONGITUDE]): vol.Coerce(float),
-                vol.Optional(CONF_REGION, default=defaults[CONF_REGION]): str,
+                vol.Required(CONF_REGION, default=defaults[CONF_REGION]): str,
                 vol.Optional(
                     CONF_CROP_NAMES_TEXT,
                     default=defaults[CONF_CROP_NAMES_TEXT],
@@ -144,13 +143,19 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
 
                 new_data = dict(self._config_entry.data)
                 new_data.update(user_input)
+                # Ensure cleared optional fields are overwritten (HA may omit
+                # empty Optional keys from user_input, leaving stale values).
+                new_data[CONF_REGION] = user_input.get(CONF_REGION, "").strip()
+                if not new_data[CONF_REGION]:
+                    errors[CONF_REGION] = "required"
                 new_data[CONF_HA_URL] = normalize_ha_url(new_data.get(CONF_HA_URL))
 
-                self.hass.config_entries.async_update_entry(
-                    self._config_entry,
-                    data=new_data,
-                    options={CONF_CROPS: new_crops},
-                )
+                if not errors:
+                    self.hass.config_entries.async_update_entry(
+                        self._config_entry,
+                        data=new_data,
+                        options={CONF_CROPS: new_crops},
+                    )
                 return self.async_create_entry(title="", data={})
             except Exception as err:  # pragma: no cover - defensive
                 _LOGGER.exception("CWA Agri options error: %s", err)
@@ -164,9 +169,7 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(CONF_FARM_NAME, default=self._config_entry.data.get(CONF_FARM_NAME, "")): str,
                 vol.Required(CONF_HA_URL, default=self._config_entry.data.get(CONF_HA_URL, "http://homeassistant:8123")): str,
                 vol.Required(CONF_HA_TOKEN, default=self._config_entry.data.get(CONF_HA_TOKEN, "")): str,
-                vol.Optional(CONF_LATITUDE, default=self._config_entry.data.get(CONF_LATITUDE, self.hass.config.latitude)): vol.Coerce(float),
-                vol.Optional(CONF_LONGITUDE, default=self._config_entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)): vol.Coerce(float),
-                vol.Optional(CONF_REGION, default=self._config_entry.data.get(CONF_REGION, "")): str,
+                vol.Required(CONF_REGION, default=self._config_entry.data.get(CONF_REGION, "")): str,
                 vol.Optional(CONF_CROP_NAMES_TEXT, default=crop_text_default): selector.TextSelector(
                     selector.TextSelectorConfig(multiple=True)
                 ),
