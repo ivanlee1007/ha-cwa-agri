@@ -221,7 +221,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 cache_headers=True,
             )
         ])
-        _LOGGER.info("Registered card static path: %s -> %s", _CARD_JS_URL, src)
+        # Register with frontend so Lovelace injects it as <script> on every page load
+        add_extra_js_url(hass, _CARD_JS_URL)
+        _LOGGER.info("Registered card static path + frontend: %s -> %s", _CARD_JS_URL, src)
+    else:
+        _LOGGER.warning("Card JS file not found: %s", src)
 
     _ensure_demo_sensor(hass)
     return True
@@ -231,10 +235,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up CWA Agri from a config entry."""
     _LOGGER.info("Setting up CWA Agri integration for %s", entry.title)
 
-    # Register JS with frontend (must be in async_setup_entry, not async_setup,
-    # so the frontend component is fully initialized)
-    add_extra_js_url(hass, _CARD_JS_URL)
-    _LOGGER.info("Card JS registered with frontend: %s", _CARD_JS_URL)
+    # Note: JS registration is done in async_setup, not here,
+    # so it runs before any config entry is loaded
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     domain_data[entry.entry_id] = entry
