@@ -3,7 +3,7 @@ class CwaAgriReportCard extends HTMLElement {
     try {
       this.config = {
         entity: 'sensor.cwa_agri_report',
-        title: '農業氣象報告 v5.7',
+        title: '農業氣象報告 v5.8',
         days: 7,
         ...config,
       };
@@ -353,7 +353,7 @@ class CwaAgriReportCard extends HTMLElement {
                 <div class="hero-title">${this._esc(a.risk_icon || '🌱')} ${this._esc(a.farm_name || '農場')}</div>
                 <div class="build-tag">
                   <button class="refresh-btn" id="cwa-refresh-btn" title="重新整理氣象報告">🔄</button>
-                  v5.6
+                  v5.8
                 </div>
               </div>
               <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')} <span class="upload-time">${this._esc((this._fmtIssued(a.pushed_at) || '-').split(' ').pop())}</span></div>
