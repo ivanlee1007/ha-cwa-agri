@@ -23,6 +23,7 @@
     "error": {
       "required": "This field is required",
       "invalid_url": "Please enter a valid URL (starting with http:// or https://)",
+      "invalid_region": "Please select a valid county/city",
       "unknown_error": "An unknown error occurred"
     },
     "abort": {
@@ -45,7 +46,36 @@
     },
     "error": {
       "required": "This field is required",
+      "invalid_region": "Please select a valid county/city",
       "unknown_error": "An unknown error occurred"
+    }
+  },
+  "selector": {
+    "region": {
+      "options": {
+        "基隆市": "Keelung",
+        "臺北市": "Taipei",
+        "新北市": "New Taipei",
+        "桃園市": "Taoyuan",
+        "新竹市": "Hsinchu City",
+        "新竹縣": "Hsinchu County",
+        "苗栗縣": "Miaoli",
+        "臺中市": "Taichung",
+        "彰化縣": "Changhua",
+        "南投縣": "Nantou",
+        "雲林縣": "Yunlin",
+        "嘉義縣": "Chiayi County",
+        "嘉義市": "Chiayi City",
+        "臺南市": "Tainan",
+        "高雄市": "Kaohsiung",
+        "屏東縣": "Pingtung",
+        "宜蘭縣": "Yilan",
+        "花蓮縣": "Hualien",
+        "臺東縣": "Taitung",
+        "澎湖縣": "Penghu",
+        "金門縣": "Kinmen",
+        "連江縣": "Lienchiang"
+      }
     }
   }
 }

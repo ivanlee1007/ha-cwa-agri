@@ -11,12 +11,13 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
 
-from .const import CONF_CROPS, CONF_FARM_NAME, CONF_HA_TOKEN, CONF_HA_URL, CONF_REGION, DOMAIN
+from .const import CONF_CROPS, CONF_FARM_NAME, CONF_HA_TOKEN, CONF_HA_URL, CONF_REGION, DOMAIN, CWA_COUNTIES, CWA_COUNTY_TO_REGION
 from .helpers import crop_names_to_text, get_merged_crops, normalize_ha_url, parse_crop_names
 
 _LOGGER = logging.getLogger(__name__)
 
 CONF_CROP_NAMES_TEXT = "crop_names_text"
+
 
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -75,9 +76,14 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 crop_text = user_input.pop(CONF_CROP_NAMES_TEXT, "")
                 self._data.update(user_input)
-                self._data[CONF_REGION] = user_input.get(CONF_REGION, "").strip()
-                if not self._data[CONF_REGION]:
+                county = user_input.get(CONF_REGION, "").strip()
+                if not county:
                     errors[CONF_REGION] = "required"
+                elif county not in CWA_COUNTY_TO_REGION:
+                    errors[CONF_REGION] = "invalid_region"
+                else:
+                    # 存縣市名稱，API 呼叫時再映射到地區
+                    self._data[CONF_REGION] = county
                 self._data[CONF_HA_URL] = normalize_ha_url(self._data.get(CONF_HA_URL))
                 self._data[CONF_CROPS] = parse_crop_names(crop_text)
 
@@ -101,7 +107,13 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         data_schema = vol.Schema(
             {
-                vol.Required(CONF_REGION, default=defaults[CONF_REGION]): str,
+                vol.Required(CONF_REGION, default=defaults[CONF_REGION]): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=CWA_COUNTIES,
+                        translation_key=CONF_REGION,
+                        mode=selector.SelectSelectorMode.LIST,
+                    )
+                ),
                 vol.Optional(
                     CONF_CROP_NAMES_TEXT,
                     default=defaults[CONF_CROP_NAMES_TEXT],
@@ -145,8 +157,10 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
                 new_data.update(user_input)
                 # Ensure cleared optional fields are overwritten (HA may omit
                 # empty Optional keys from user_input, leaving stale values).
-                new_data[CONF_REGION] = user_input.get(CONF_REGION, "").strip()
-                if not new_data[CONF_REGION]:
+                county = user_input.get(CONF_REGION, "").strip()
+                if county and county in CWA_COUNTY_TO_REGION:
+                    new_data[CONF_REGION] = county  # 存縣市名稱
+                elif not county:
                     errors[CONF_REGION] = "required"
                 new_data[CONF_HA_URL] = normalize_ha_url(new_data.get(CONF_HA_URL))
 
@@ -169,7 +183,13 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(CONF_FARM_NAME, default=self._config_entry.data.get(CONF_FARM_NAME, "")): str,
                 vol.Required(CONF_HA_URL, default=self._config_entry.data.get(CONF_HA_URL, "http://homeassistant:8123")): str,
                 vol.Required(CONF_HA_TOKEN, default=self._config_entry.data.get(CONF_HA_TOKEN, "")): str,
-                vol.Required(CONF_REGION, default=self._config_entry.data.get(CONF_REGION, "")): str,
+                vol.Required(CONF_REGION, default=self._config_entry.data.get(CONF_REGION, "")): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=CWA_COUNTIES,
+                        translation_key=CONF_REGION,
+                        mode=selector.SelectSelectorMode.LIST,
+                    )
+                ),
                 vol.Optional(CONF_CROP_NAMES_TEXT, default=crop_text_default): selector.TextSelector(
                     selector.TextSelectorConfig(multiple=True)
                 ),
