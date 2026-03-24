@@ -358,7 +358,7 @@ class CwaAgriReportCard extends HTMLElement {
             <div class="hero-side">
               <div class="hero-temp">${this._esc(a.temp_min ?? '-')}° ~ ${this._esc(a.temp_max ?? '-')}°</div>
               <div class="hero-weather">${this._esc(a.current_weather || '-')}</div>
-              <div class="hero-issued">更新：${this._esc((this._fmtIssued(a.issued_at) || '-').split(' ').pop())}</div>
+              <div class="hero-issued">更新：${this._esc(this._fmtIssued(a.issued_at || '-'))}</div>
             </div>
           </div>
 
