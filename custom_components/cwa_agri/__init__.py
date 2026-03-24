@@ -68,10 +68,20 @@ def _install_card_js(hass: HomeAssistant) -> bool:
     return True
 
 
+def _get_card_js_url(hass: HomeAssistant) -> str:
+    """Return card JS URL with mtime-based cache busting."""
+    dst = _get_card_dst(hass)
+    try:
+        mtime = int(dst.stat().st_mtime)
+    except (FileNotFoundError, OSError):
+        mtime = 0
+    return f"{_CARD_JS_URL}?v={mtime}"
+
+
 def _register_lovelace_resource(hass: HomeAssistant) -> None:
-    """Register card resource in lovelace_resources (idempotent)."""
+    """Register card resource in lovelace_resources (idempotent, cache-busted)."""
     res_path = _get_resources_path(hass)
-    url = _CARD_JS_URL
+    url = _get_card_js_url(hass)
 
     try:
         with open(res_path, encoding="utf-8") as f:
@@ -222,7 +232,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             )
         ])
         # Register with frontend so Lovelace injects it as <script> on every page load
-        add_extra_js_url(hass, _CARD_JS_URL)
+        add_extra_js_url(hass, _get_card_js_url(hass))
         _LOGGER.info("Registered card static path + frontend: %s -> %s", _CARD_JS_URL, src)
     else:
         _LOGGER.warning("Card JS file not found: %s", src)
