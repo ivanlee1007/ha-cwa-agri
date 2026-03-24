@@ -111,7 +111,7 @@ class CwaAgriConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     selector.SelectSelectorConfig(
                         options=CWA_COUNTIES,
                         translation_key=CONF_REGION,
-                        mode=selector.SelectSelectorMode.LIST,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
                 vol.Optional(
@@ -187,7 +187,7 @@ class CwaAgriOptionsFlow(config_entries.OptionsFlow):
                     selector.SelectSelectorConfig(
                         options=CWA_COUNTIES,
                         translation_key=CONF_REGION,
-                        mode=selector.SelectSelectorMode.LIST,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
                 vol.Optional(CONF_CROP_NAMES_TEXT, default=crop_text_default): selector.TextSelector(

@@ -1,7 +1,7 @@
 {
   "name": "UNiNUS CWA Agri",
   "description": "CWA 農業氣象報告整合 - 提供設定介面、內建 Dashboard 卡片並支援 OpenClaw CWA Skill",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "country": [
     "TW",
     "CN",
