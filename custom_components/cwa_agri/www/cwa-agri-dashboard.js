@@ -405,7 +405,7 @@ window.customCards = window.customCards || [];
 if (!window.customCards.some((card) => card.type === 'cwa-agri-report-card')) {
   window.customCards.push({
     type: 'cwa-agri-report-card',
-    name: 'CWA Agri Report Card',
+    name: 'UNiNUS CWA Agri Report Card',
     description: 'OpenClaw CWA agri report dashboard card (bundled with ha-cwa-agri)',
   });
 }

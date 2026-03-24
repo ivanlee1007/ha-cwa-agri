@@ -1,9 +1,9 @@
 {
-  "title": "CWA Agricultural Integration",
+  "title": "UNiNUS CWA Agricultural Integration",
   "config": {
     "step": {
       "user": {
-        "title": "CWA Agri Setup",
+        "title": "UNiNUS CWA Agri Setup",
         "description": "Start with the basic connection details. Crop maintenance happens after installation.",
         "data": {
           "farm_name": "Farm Name",
@@ -33,7 +33,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "CWA Agri Maintenance",
+        "title": "UNiNUS CWA Agri Maintenance",
         "description": "Manage crop names with a multi-value text field; press Enter after each crop, then use dropdown entities for stage updates.",
         "data": {
           "farm_name": "Farm Name",

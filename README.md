@@ -1,4 +1,4 @@
-# CWA Agri - Home Assistant Integration
+# UNiNUS CWA Agri - Home Assistant Integration
 
 台灣中央氣象署 (CWA) 農業氣象報告整合，搭配 OpenClaw CWA Skill 使用。
 
@@ -18,7 +18,7 @@
 
 1. Home Assistant → **HACS** → **Custom repositories**
 2. 加入：`https://github.com/ivanlee1007/ha-cwa-agri`，Category：`Integration`
-3. 安裝 **CWA Agri**
+3. 安裝 **UNiNUS CWA Agri**
 4. **重啟 Home Assistant**
 5. 設定 → 裝置與服務 → 新增整合 → 搜尋「CWA Agri」
 

@@ -1,9 +1,9 @@
 {
-  "title": "CWA 農業報告整合",
+  "title": "UNiNUS CWA 農業報告整合",
   "config": {
     "step": {
       "user": {
-        "title": "CWA 農業設定",
+        "title": "UNiNUS CWA 農業設定",
         "description": "先填基本資料，作物管理改成安裝後再維護。",
         "data": {
           "farm_name": "農場名稱",
@@ -33,7 +33,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "CWA 農業維護",
+        "title": "UNiNUS CWA 農業維護",
         "description": "用多值輸入管理作物名稱；每輸入一個作物後按 Enter 確認，階段再用下拉選單隨時調整。",
         "data": {
           "farm_name": "農場名稱",
