@@ -314,7 +314,7 @@ class CwaAgriReportCard extends HTMLElement {
               <div class="hero-title-row">
                 <div class="hero-title">${this._esc(a.risk_icon || '🌱')} ${this._esc(a.farm_name || '農場')}</div>
                 <div class="build-tag">
-                  <button class="refresh-btn" onclick="this.getRootNode().host._onRefresh()" title="重新整理氣象報告">🔄</button>
+                  <button class="refresh-btn" onclick="this.closest('cwa-agri-report-card')._onRefresh()" title="重新整理氣象報告">🔄</button>
                   v5.4
                 </div>
               </div>
