@@ -2,7 +2,7 @@ class CwaAgriReportCard extends HTMLElement {
   setConfig(config) {
     this.config = {
       entity: 'sensor.cwa_agri_report',
-      title: '農業氣象報告 v5.4',
+      title: '農業氣象報告 v5.5',
       days: 7,
       ...config,
     };
@@ -41,19 +41,9 @@ class CwaAgriReportCard extends HTMLElement {
   }
 
   async _onRefresh() {
-    console.log('[CWA Agri] _onRefresh called', {
-      hasHass: !!this._hass,
-      entityId: this.config?.entity,
-      btnExists: !!this.querySelector('#cwa-refresh-btn')
-    });
-    if (!this._hass) {
-      console.warn('[CWA Agri] _onRefresh skipped: no _hass');
-      return;
-    }
+    if (!this._hass) return;
     try {
-      console.log('[CWA Agri] calling button.press...');
       await this._hass.callService('button', 'press', { entity_id: 'button.cwa_agri_refresh' });
-      console.log('[CWA Agri] button.press OK');
     } catch (e) {
       console.error('[CWA Agri] refresh failed:', e);
     }
@@ -347,7 +337,7 @@ class CwaAgriReportCard extends HTMLElement {
                 <div class="hero-title">${this._esc(a.risk_icon || '🌱')} ${this._esc(a.farm_name || '農場')}</div>
                 <div class="build-tag">
                   <button class="refresh-btn" id="cwa-refresh-btn" title="重新整理氣象報告">🔄</button>
-                  v5.4
+                  v5.5
                 </div>
               </div>
               <div class="hero-sub">${this._esc(a.crop_name || '-')}｜${this._esc(a.date || '-')}</div>
@@ -430,12 +420,8 @@ class CwaAgriReportCard extends HTMLElement {
 
     // 綁定刷新按鈕（直接在 render 後綁定，不依賴 connectedCallback）
     const btn = this.querySelector('#cwa-refresh-btn');
-    if (btn) {
-      btn.onclick = () => {
-        console.log('[CWA Agri] refresh button clicked via onclick');
-        this._onRefresh();
-      };
-      console.log('[CWA Agri] refresh onclick bound');
+    if (btn && !btn.onclick) {
+      btn.onclick = () => this._onRefresh();
     }
   }
 
