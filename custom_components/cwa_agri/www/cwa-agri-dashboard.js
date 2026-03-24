@@ -417,12 +417,19 @@ class CwaAgriReportCard extends HTMLElement {
         </div>
       </ha-card>
     `;
+
+    // 綁定刷新按鈕（直接在 render 後綁定，不依賴 connectedCallback）
+    const btn = this.querySelector('#cwa-refresh-btn');
+    if (btn) {
+      btn.onclick = () => this._onRefresh();
+    }
   }
 
   connectedCallback() {
+    // fallback: 若 render 後才 connect，也綁一次
     const btn = this.querySelector('#cwa-refresh-btn');
-    if (btn) {
-      btn.addEventListener('click', () => this._onRefresh());
+    if (btn && !btn.onclick) {
+      btn.onclick = () => this._onRefresh();
     }
   }
 }
