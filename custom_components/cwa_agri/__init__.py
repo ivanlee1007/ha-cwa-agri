@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
 from pathlib import Path
 
 from homeassistant.config_entries import ConfigEntry
@@ -26,6 +27,108 @@ PLATFORMS = ["sensor", "select", "button"]
 
 DEMO_SENSOR_ENTITY = "sensor.cwa_agri_report"
 _CREDENTIALS_FILE = "cwa_credentials.json"
+
+# Frontend card paths
+_CARD_SRC_NAME = "cwa-agri-dashboard.js"
+_CARD_DIR_NAME = "cwa_agri"
+_CARD_VERSION = "1.4.4"
+
+
+def _get_card_src(hass: HomeAssistant) -> Path:
+    """Path to bundled JS in integration package."""
+    return Path(__file__).parent / "www" / _CARD_SRC_NAME
+
+
+def _get_card_dst(hass: HomeAssistant) -> Path:
+    """Target path in HA www/ (served via /local/)."""
+    return Path(hass.config.config_dir) / "www" / _CARD_DIR_NAME / _CARD_SRC_NAME
+
+
+def _get_resources_path(hass: HomeAssistant) -> Path:
+    return Path(hass.config.config_dir) / ".storage" / "lovelace_resources"
+
+
+def _resource_url() -> str:
+    return f"/local/{_CARD_DIR_NAME}/{_CARD_SRC_NAME}?v={_CARD_VERSION}"
+
+
+def _install_card(hass: HomeAssistant) -> bool:
+    """Copy JS to www/ and register in lovelace_resources. Returns True if newly installed."""
+    src = _get_card_src(hass)
+    dst = _get_card_dst(hass)
+    res_path = _get_resources_path(hass)
+
+    if not src.exists():
+        _LOGGER.warning("Card JS not found at %s", src)
+        return False
+
+    # 1. Copy JS file (always overwrite to keep version in sync)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dst)
+    _LOGGER.info("Card JS installed to %s", dst)
+
+    # 2. Register in lovelace_resources (idempotent)
+    url = _resource_url()
+    try:
+        with open(res_path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = {"data": {"resources": []}, "key": "lovelace_resources"}
+
+    resources = data.get("data", {}).get("resources", [])
+    existing = [r for r in resources if _CARD_DIR_NAME in r.get("url", "")]
+    if existing:
+        # Update version in existing entry
+        for r in existing:
+            r["url"] = url
+        _LOGGER.debug("Card resource already registered, updated URL")
+    else:
+        resources.append({"url": url, "type": "module"})
+        _LOGGER.info("Card resource added to lovelace_resources")
+
+    data.setdefault("data", {})["resources"] = resources
+    try:
+        with open(res_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+    except OSError as err:
+        _LOGGER.warning("Failed to write lovelace_resources: %s", err)
+
+    return True
+
+
+def _uninstall_card(hass: HomeAssistant) -> None:
+    """Remove JS file and lovelace_resources entry."""
+    dst = _get_card_dst(hass)
+    res_path = _get_resources_path(hass)
+
+    # 1. Remove JS file
+    if dst.exists():
+        dst.unlink()
+        _LOGGER.info("Card JS removed: %s", dst)
+        # Remove directory if empty
+        try:
+            dst.parent.rmdir()
+        except OSError:
+            pass
+
+    # 2. Remove from lovelace_resources
+    url = _resource_url()
+    try:
+        with open(res_path, encoding="utf-8") as f:
+            data = json.load(f)
+        resources = data.get("data", {}).get("resources", [])
+        before = len(resources)
+        resources = [r for r in resources if _CARD_DIR_NAME not in r.get("url", "")]
+        removed = before - len(resources)
+        if removed:
+            data["data"]["resources"] = resources
+            with open(res_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.write("\n")
+            _LOGGER.info("Removed %d card resource(s) from lovelace_resources", removed)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        pass
 
 
 def _write_credentials(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -104,8 +207,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up CWA Agri integration domain data and bundled dashboard card."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Dashboard card JS is persisted in .storage/lovelace_resources via /local/ path.
-    # See TROUBLESHOOTING.md for details on the JS loading architecture.
+    # Auto-install dashboard card JS to www/ and register in lovelace_resources.
+    # This runs on every HA restart (idempotent) — keeps JS version in sync.
+    await hass.async_add_executor_job(_install_card, hass)
 
     _ensure_demo_sensor(hass)
     return True
